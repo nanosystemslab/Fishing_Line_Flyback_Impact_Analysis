@@ -5,9 +5,6 @@ description = "Fishing_Line_Flyback_Impact_Analysis"
 authors = ["Nanosystems Lab <fnslab@hawaii.edu>"]
 license = "GPL-3.0"
 readme = "README.md"
-homepage = "https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis"
-repository = "https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis"
-documentation = "https://Fishing_Line_Flyback_Impact_Analysis.readthedocs.io"
 classifiers = [
     "Development Status :: 4 - Beta",
 ]

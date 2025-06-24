@@ -1,13 +1,10 @@
 # Fishing Line Flyback Impact Analysis
 
-[![Status](https://img.shields.io/pypi/status/Fishing_Line_Flyback_Impact_Analysis.svg)][pypi status]
-[![Python Version](https://img.shields.io/pypi/pyversions/Fishing_Line_Flyback_Impact_Analysis)][pypi status]
-[![License](https://img.shields.io/pypi/l/Fishing_Line_Flyback_Impact_Analysis)][license]
-[![Read the documentation at https://Fishing_Line_Flyback_Impact_Analysis.readthedocs.io/](https://img.shields.io/readthedocs/Fishing_Line_Flyback_Impact_Analysis/latest.svg?label=Read%20the%20Docs)][read the docs]
 [![Tests](https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/workflows/Tests/badge.svg)][tests]
 [![Codecov](https://codecov.io/gh/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/branch/main/graph/badge.svg)][codecov]
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)][license]
 
 **A comprehensive Python package for analyzing fishing line flyback impact data from Dewesoft sensor measurements.**
 
@@ -75,18 +72,24 @@ When fishing lines snap under tension, the rapid flyback creates significant imp
 
 ## Installation
 
-You can install _Fishing Line Flyback Impact Analysis_ via [pip] from [PyPI]:
+### From Source (Recommended)
 
-```console
-$ pip install Fishing_Line_Flyback_Impact_Analysis
-```
-
-Or for development installation:
+Clone the repository and install with Poetry:
 
 ```console
 $ git clone https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis.git
 $ cd Fishing_Line_Flyback_Impact_Analysis
 $ poetry install
+```
+
+### Development Installation
+
+For development with all dev dependencies:
+
+```console
+$ git clone https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis.git
+$ cd Fishing_Line_Flyback_Impact_Analysis
+$ poetry install --with dev
 ```
 
 ## Quick Start
@@ -283,17 +286,12 @@ This project was generated from [@nanosystemslab]'s [Nanosystems Lab Python Cook
 
 ---
 
-[pypi status]: https://pypi.org/project/Fishing_Line_Flyback_Impact_Analysis/
-[read the docs]: https://Fishing_Line_Flyback_Impact_Analysis.readthedocs.io/
 [tests]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/actions?workflow=Tests
 [codecov]: https://app.codecov.io/gh/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 [@nanosystemslab]: https://github.com/nanosystemslab
-[pypi]: https://pypi.org/
 [nanosystems lab python cookiecutter]: https://github.com/nanosystemslab/cookiecutter-nanosystemslab
 [file an issue]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/issues
-[pip]: https://pip.pypa.io/
 [license]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/blob/main/LICENSE
 [contributor guide]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/blob/main/CONTRIBUTING.md
-[command-line reference]: https://Fishing_Line_Flyback_Impact_Analysis.readthedocs.io/en/latest/usage.html

@@ -10,7 +10,9 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+from typing import Dict
+
 import pandas as pd
 
 from . import __version__
@@ -22,9 +24,7 @@ def setup_logging(verbosity: int) -> None:
     """Setup logging configuration."""
     log_fmt = "%(levelname)s - %(module)s - %(funcName)s @%(lineno)d: %(message)s"
     logging.basicConfig(
-        filename=None, 
-        format=log_fmt, 
-        level=logging.getLevelName(verbosity)
+        filename=None, format=log_fmt, level=logging.getLevelName(verbosity)
     )
 
 
@@ -40,8 +40,12 @@ def parse_command_line() -> Dict[str, Any]:
     )
 
     parser.add_argument(
-        "-v", "--verbose", action="count", default=0,
-        dest="verbosity", help="Verbose output (use -vv for more verbose)"
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        dest="verbosity",
+        help="Verbose output (use -vv for more verbose)",
     )
 
     # Subcommands
@@ -54,24 +58,31 @@ def parse_command_line() -> Dict[str, Any]:
         "analyze", help="Analyze impact properties from sensor data"
     )
     analyze_parser.add_argument(
-        "-i", "--input", nargs="+", required=True, 
-        help="Path(s) to input CSV or H5 files"
+        "-i",
+        "--input",
+        nargs="+",
+        required=True,
+        help="Path(s) to input CSV or H5 files",
     )
     analyze_parser.add_argument(
-        "-o", "--output", default="out", 
-        help="Output directory (default: out)"
+        "-o", "--output", default="out", help="Output directory (default: out)"
     )
     analyze_parser.add_argument(
-        "--param-y", choices=["SUM", "S1", "S2", "S3", "S4", "Max", "All"],
-        default="SUM", help="Y-axis parameter for plotting (default: SUM)"
+        "--param-y",
+        choices=["SUM", "S1", "S2", "S3", "S4", "Max", "All"],
+        default="SUM",
+        help="Y-axis parameter for plotting (default: SUM)",
     )
     analyze_parser.add_argument(
-        "--param-x", choices=["time"], default="time",
-        help="X-axis parameter for plotting (default: time)"
+        "--param-x",
+        choices=["time"],
+        default="time",
+        help="X-axis parameter for plotting (default: time)",
     )
     analyze_parser.add_argument(
-        "--show-all-sensors", action="store_true",
-        help="Plot all individual sensors on same graph"
+        "--show-all-sensors",
+        action="store_true",
+        help="Plot all individual sensors on same graph",
     )
 
     # Post-processing command for results files
@@ -79,37 +90,33 @@ def parse_command_line() -> Dict[str, Any]:
         "postprocess", help="Post-process results from text file"
     )
     postprocess_parser.add_argument(
-        "-i", "--input", required=True,
-        help="Path to results text file"
+        "-i", "--input", required=True, help="Path to results text file"
     )
     postprocess_parser.add_argument(
-        "-o", "--output", default="out",
-        help="Output directory (default: out)"
+        "-o", "--output", default="out", help="Output directory (default: out)"
     )
     postprocess_parser.add_argument(
-        "--plot-type", choices=["box", "violin", "dual", "all"], 
-        default="all", help="Type of plots to generate (default: all)"
+        "--plot-type",
+        choices=["box", "violin", "dual", "all"],
+        default="all",
+        help="Type of plots to generate (default: all)",
     )
     postprocess_parser.add_argument(
-        "--generate-table", action="store_true",
-        help="Also generate LaTeX table for publication"
+        "--generate-table",
+        action="store_true",
+        help="Also generate LaTeX table for publication",
     )
 
-    # Batch processing command  
-    batch_parser = subparsers.add_parser(
-        "batch", help="Batch process multiple files"
+    # Batch processing command
+    batch_parser = subparsers.add_parser("batch", help="Batch process multiple files")
+    batch_parser.add_argument(
+        "-d", "--data-dir", required=True, help="Directory containing data files"
     )
     batch_parser.add_argument(
-        "-d", "--data-dir", required=True,
-        help="Directory containing data files"
+        "-o", "--output", default="out", help="Output directory (default: out)"
     )
     batch_parser.add_argument(
-        "-o", "--output", default="out",
-        help="Output directory (default: out)"
-    )
-    batch_parser.add_argument(
-        "--summary", action="store_true",
-        help="Generate summary statistics and report"
+        "--summary", action="store_true", help="Generate summary statistics and report"
     )
 
     # Table generation command
@@ -117,12 +124,10 @@ def parse_command_line() -> Dict[str, Any]:
         "table", help="Generate LaTeX table from results file"
     )
     table_parser.add_argument(
-        "-i", "--input", required=True,
-        help="Path to results text file"
+        "-i", "--input", required=True, help="Path to results text file"
     )
     table_parser.add_argument(
-        "-o", "--output", default="out",
-        help="Output directory (default: out)"
+        "-o", "--output", default="out", help="Output directory (default: out)"
     )
 
     # Visualization command for output data
@@ -130,20 +135,22 @@ def parse_command_line() -> Dict[str, Any]:
         "visualize", help="Visualize output data from CSV files"
     )
     visualize_parser.add_argument(
-        "-i", "--input", nargs="+", required=True,
-        help="Path(s) to output CSV files"
+        "-i", "--input", nargs="+", required=True, help="Path(s) to output CSV files"
     )
     visualize_parser.add_argument(
-        "-o", "--output", default="out",
-        help="Output directory (default: out)"
+        "-o", "--output", default="out", help="Output directory (default: out)"
     )
     visualize_parser.add_argument(
-        "--x-param", choices=["D", "L", "KE", "V"], default="D",
-        help="X-axis parameter (default: D)"
+        "--x-param",
+        choices=["D", "L", "KE", "V"],
+        default="D",
+        help="X-axis parameter (default: D)",
     )
     visualize_parser.add_argument(
-        "--y-param", choices=["D", "L", "KE", "V"], default="KE", 
-        help="Y-axis parameter (default: KE)"
+        "--y-param",
+        choices=["D", "L", "KE", "V"],
+        default="KE",
+        help="Y-axis parameter (default: KE)",
     )
 
     args = parser.parse_args()
@@ -160,39 +167,45 @@ def handle_analyze_command(args: Dict[str, Any]) -> int:
 
     try:
         results = []
-        
+
         for input_file in args["input"]:
             logging.info(f"Processing file: {input_file}")
-            
+
             # Load and analyze file
             df = analyzer.load_file(input_file)
             properties = analyzer.calculate_impact_properties(
                 df, param_y=args["param_y"], param_x=args["param_x"]
             )
-            
+
             # Create time series plot
             visualizer.plot_time_series(
-                df, 
-                param_y=args["param_y"], 
+                df,
+                param_y=args["param_y"],
                 param_x=args["param_x"],
-                show_all_sensors=args["show_all_sensors"]
+                show_all_sensors=args["show_all_sensors"],
             )
-            
+
             # Store results - use the metadata from df.meta
             properties["filepath"] = input_file
-            properties["filename"] = df.meta.fname  # Use df.meta.fname instead of properties['filename']
+            properties["filename"] = (
+                df.meta.fname
+            )  # Use df.meta.fname instead of properties['filename']
             results.append(properties)
-            
+
             # Print results to console
-            print(f"{df.meta.fname},J={properties['impulse_Ns']:.3f},"
-                  f"F={properties['max_force_N']:.2f}")
+            print(
+                f"{df.meta.fname},J={properties['impulse_Ns']:.3f},"
+                f"F={properties['max_force_N']:.2f}"
+            )
 
         # Save results to text file for later post-processing
         results_file = Path(args["output"]) / "run_results.txt"
         with open(results_file, "w") as f:
             for result in results:
-                f.write(f"{result['filename']},J={result['impulse_Ns']:.3f},"
-                       f"F={result['max_force_N']:.2f}\n")
+                f.write(
+                    f"{result['filename']},J={result['impulse_Ns']:.3f},"
+                    f"F={result['max_force_N']:.2f}\n"
+                )
 
         logging.info(f"Analysis complete. Results saved to {args['output']}")
         return 0
@@ -200,6 +213,7 @@ def handle_analyze_command(args: Dict[str, Any]) -> int:
     except Exception as e:
         logging.error(f"Analysis failed: {e}")
         import traceback
+
         logging.error(traceback.format_exc())  # Add detailed error info
         return 1
 
@@ -212,22 +226,22 @@ def handle_postprocess_command(args: Dict[str, Any]) -> int:
     try:
         # Load results file
         results_df = analyzer.load_results_file(args["input"])
-        
+
         # Calculate summary statistics
         summary_stats = analyzer.calculate_summary_stats(results_df)
-        
+
         # Save summary to CSV
         analyzer.save_results_to_csv(summary_stats, args["output"])
-        
+
         # Generate plots based on plot type
         if args["plot_type"] in ["box", "all"]:
             visualizer.plot_box_plots(results_df, param="F")
             visualizer.plot_box_plots(results_df, param="J")
-            
+
         if args["plot_type"] in ["violin", "all"]:
             visualizer.plot_violin_plots(results_df, param="F")
             visualizer.plot_violin_plots(results_df, param="J")
-            
+
         if args["plot_type"] in ["dual", "all"]:
             visualizer.plot_dual_box_plots(results_df, save_format="png")
             visualizer.plot_dual_box_plots(results_df, save_format="svg")
@@ -247,7 +261,7 @@ def handle_postprocess_command(args: Dict[str, Any]) -> int:
         return 1
 
 
-def handle_batch_command(args: Dict[str, Any]) -> int:
+def handle_batch_command(args: Dict[str, Any]) -> int:  # noqa: C901
     """Handle the batch processing command."""
     analyzer = ImpactAnalyzer()
     visualizer = ImpactVisualizer(output_dir=args["output"])
@@ -269,18 +283,20 @@ def handle_batch_command(args: Dict[str, Any]) -> int:
             return 1
 
         logging.info(f"Found {len(all_files)} files to process")
-        
+
         results = []
         for file_path in all_files:
             try:
                 logging.info(f"Processing: {file_path}")
                 result = analyzer.process_single_file(str(file_path))
                 results.append(result)
-                
+
                 # Print progress
-                print(f"{result['filename']},J={result['impulse_Ns']:.3f},"
-                      f"F={result['max_force_N']:.2f}")
-                      
+                print(
+                    f"{result['filename']},J={result['impulse_Ns']:.3f},"
+                    f"F={result['max_force_N']:.2f}"
+                )
+
             except Exception as e:
                 logging.warning(f"Failed to process {file_path}: {e}")
                 continue
@@ -289,27 +305,31 @@ def handle_batch_command(args: Dict[str, Any]) -> int:
         results_file = Path(args["output"]) / "batch_results.txt"
         with open(results_file, "w") as f:
             for result in results:
-                f.write(f"{result['filename']},J={result['impulse_Ns']:.3f},"
-                       f"F={result['max_force_N']:.2f}\n")
+                f.write(
+                    f"{result['filename']},J={result['impulse_Ns']:.3f},"
+                    f"F={result['max_force_N']:.2f}\n"
+                )
 
         if args["summary"]:
             # Create DataFrame from results for summary analysis
             results_data = []
             for result in results:
-                results_data.append({
-                    'fname': result['filename'],
-                    'test_type': result['config'],
-                    'J': result['impulse_Ns'],
-                    'F': result['max_force_N']
-                })
-            
+                results_data.append(
+                    {
+                        "fname": result["filename"],
+                        "test_type": result["config"],
+                        "J": result["impulse_Ns"],
+                        "F": result["max_force_N"],
+                    }
+                )
+
             results_df = pd.DataFrame(results_data)
-            
+
             # Calculate and save summary statistics
             summary_stats = analyzer.calculate_summary_stats(results_df)
             analyzer.save_results_to_csv(summary_stats, args["output"])
             analyzer.generate_summary_report(summary_stats, args["output"])
-            
+
             # Create summary plots
             visualizer.create_summary_plots(results_df)
 
@@ -328,17 +348,18 @@ def handle_table_command(args: Dict[str, Any]) -> int:
     try:
         # Load results file
         results_df = analyzer.load_results_file(args["input"])
-        
+
         # Generate and print human-readable table
-        config_stats = analyzer.generate_summary_table(results_df, args["output"])
-        
+        analyzer.generate_summary_table(results_df, args["output"])
+
         logging.info(f"Summary table generated and saved to {args['output']}")
-        
+
         return 0
 
     except Exception as e:
         logging.error(f"Table generation failed: {e}")
         import traceback
+
         logging.error(traceback.format_exc())
         return 1
 
@@ -350,9 +371,7 @@ def handle_visualize_command(args: Dict[str, Any]) -> int:
     try:
         for input_file in args["input"]:
             visualizer.plot_output_data(
-                filepath=input_file, 
-                x_param=args["x_param"], 
-                y_param=args["y_param"]
+                filepath=input_file, x_param=args["x_param"], y_param=args["y_param"]
             )
 
         logging.info(f"Visualization complete. Results saved to {args['output']}")
@@ -370,7 +389,7 @@ def main() -> int:
 
     command_handlers = {
         "analyze": handle_analyze_command,
-        "postprocess": handle_postprocess_command, 
+        "postprocess": handle_postprocess_command,
         "batch": handle_batch_command,
         "table": handle_table_command,
         "visualize": handle_visualize_command,

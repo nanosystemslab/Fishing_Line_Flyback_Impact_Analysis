@@ -7,6 +7,7 @@ import seaborn as sns
 from .analysis import ImpactAnalyzer
 from .visualization import ImpactVisualizer
 
+
 __version__ = "0.0.1"
 
 __all__ = ["ImpactAnalyzer", "ImpactVisualizer", "__version__"]

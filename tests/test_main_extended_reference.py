@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
-
 from Fishing_Line_Material_Properties_Analysis import __main__
 
 

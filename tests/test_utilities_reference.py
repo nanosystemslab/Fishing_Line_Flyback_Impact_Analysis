@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-
 from Fishing_Line_Material_Properties_Analysis.analysis import MaterialAnalyzer
 from Fishing_Line_Material_Properties_Analysis.visualization import MaterialVisualizer
 

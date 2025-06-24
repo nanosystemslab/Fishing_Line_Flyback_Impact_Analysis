@@ -1,6 +1,5 @@
 # Fishing Line Flyback Impact Analysis
 
-[![PyPI](https://img.shields.io/pypi/v/Fishing_Line_Flyback_Impact_Analysis.svg)][pypi status]
 [![Status](https://img.shields.io/pypi/status/Fishing_Line_Flyback_Impact_Analysis.svg)][pypi status]
 [![Python Version](https://img.shields.io/pypi/pyversions/Fishing_Line_Flyback_Impact_Analysis)][pypi status]
 [![License](https://img.shields.io/pypi/l/Fishing_Line_Flyback_Impact_Analysis)][license]

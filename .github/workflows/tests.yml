@@ -8,6 +8,7 @@ jobs:
   tests:
     name: ${{ matrix.session }} ${{ matrix.python }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -90,13 +91,13 @@ jobs:
       - name: Run Nox
         run: |
           nox --python=${{ matrix.python }}
-        timeout-minutes: 10
+        timeout-minutes: 20
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
         uses: "actions/upload-artifact@v4"
         with:
-          name: coverage-data-${{ matrix.python }}-${{ matrix.os }} # Make unique
+          name: coverage-data-${{ matrix.python }}-${{ matrix.os }}
           path: ".coverage.*"
           include-hidden-files: true
 
@@ -138,7 +139,8 @@ jobs:
       - name: Download coverage data
         uses: actions/download-artifact@v4
         with:
-          name: coverage-data
+          pattern: coverage-data-*
+          merge-multiple: true
 
       - name: Combine coverage data and display human readable report
         run: |

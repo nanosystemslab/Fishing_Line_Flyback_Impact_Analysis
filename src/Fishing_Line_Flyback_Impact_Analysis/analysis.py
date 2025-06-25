@@ -436,14 +436,14 @@ class ImpactAnalyzer:
                 f.write("\n\nNOTES:\n")
                 f.write(
                     "- Impact Energy calculated assuming inelastic collision: "
-                    "E = impulse²/(2×mass)\n"
+                    "E = impulse²/(2 × mass)\n"
                 )
                 f.write(
                     "- Percentages calculated relative to Standard (SD) configuration\n"
                 )
-                f.write("- Force converted from lbf to kN (×4.44822/1000)\n")
-                f.write("- Impulse converted from lbf·s to kN·s (×4.44822/1000)\n")
-                f.write("- Energy converted to MJ (×1e-6)\n")
+                f.write("- Force converted from lbf to kN (× 4.44822 / 1000)\n")
+                f.write("- Impulse converted from lbf·s to kN·s (× 4.44822 / 1000)\n")
+                f.write("- Energy converted to MJ (× 1e-6)\n")
 
             self.log.info(f"Summary table saved to: {summary_file}")
 
@@ -717,7 +717,6 @@ class ImpactAnalyzer:
         """
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-
         report_path = output_path / "summary_report.txt"
 
         with open(report_path, "w") as f:

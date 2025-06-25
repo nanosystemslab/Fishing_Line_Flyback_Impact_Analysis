@@ -157,6 +157,9 @@ class ImpactAnalyzer:
 
         Returns:
             Dictionary with calculated properties
+
+        Raises:
+            ValueError: If DataFrame is empty or invalid
         """
         # Handle empty dataframes
         if df.empty or len(df) == 0:
@@ -230,6 +233,9 @@ class ImpactAnalyzer:
 
         Returns:
             DataFrame with processed results
+
+        Raises:
+            ValueError: If file format is invalid
         """
         if not filepath.endswith(".txt"):
             raise ValueError("Results file must be .txt format")
@@ -534,6 +540,9 @@ class ImpactAnalyzer:
         Args:
             results_df: DataFrame with test results
             output_dir: Output directory path
+
+        Returns:
+            dict: Configuration statistics
         """
         # Calculate detailed statistics for each configuration
         config_stats = {}
@@ -721,8 +730,8 @@ class ImpactAnalyzer:
                     f"  Mean Impulse: {row['mean_J']:.3f} ± {row['std_J']:.3f} Ns\n"
                 )
                 f.write(f"  Mean Force: {row['mean_F']:.3f} ± {row['std_F']:.3f} N\n")
-                f.write(f"  Impulse % diff from STND: {row['%diff_J']*100:.1f}%\n")
-                f.write(f"  Force % diff from STND: {row['%diff_F']*100:.1f}%\n")
+                f.write(f"  Impulse % diff from STND: {row['%diff_J'] * 100:.1f}%\n")
+                f.write(f"  Force % diff from STND: {row['%diff_F'] * 100:.1f}%\n")
                 f.write("\n")
 
         self.log.info(f"Summary report saved to: {report_path}")

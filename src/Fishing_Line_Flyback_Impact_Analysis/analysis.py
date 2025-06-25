@@ -158,6 +158,10 @@ class ImpactAnalyzer:
         Returns:
             Dictionary with calculated properties
         """
+        # Handle empty dataframes
+        if df.empty or len(df) == 0:
+            raise ValueError("DataFrame is empty - cannot calculate properties")
+
         config = df.meta.config
 
         # Get mass for this configuration
@@ -165,6 +169,11 @@ class ImpactAnalyzer:
 
         # Get data arrays
         x = df[param_x].values
+
+        # Handle "All" parameter by using SUM
+        if param_y == "All":
+            param_y = "SUM"
+
         y = df[param_y].values
 
         # Adjust time to start from zero
@@ -227,8 +236,15 @@ class ImpactAnalyzer:
 
         # Read the results file (format: filename,J=value,F=value)
         df = pd.read_csv(filepath, header=None, sep="=|,", engine="python")
-        df = df.drop(columns=[1, 3])  # Remove the '=' columns
-        df.columns = ["fname", "J", "F"]
+
+        # Handle the parsing - should have columns: filename, 'J', value, 'F', value
+        if len(df.columns) >= 5:
+            df = df[[0, 2, 4]]  # filename, J value, F value
+            df.columns = ["fname", "J", "F"]
+        else:
+            # Fallback parsing
+            df = df.drop(columns=[1, 3])  # Remove the '=' columns
+            df.columns = ["fname", "J", "F"]
 
         # Convert numeric columns
         df.loc[:, df.columns != "fname"] = df.loc[:, df.columns != "fname"].astype(
@@ -345,6 +361,11 @@ class ImpactAnalyzer:
             "BR": "Breakaway (BR)",
         }
 
+        # First, get STND baseline values for percentage calculations
+        stnd_data = results_df[results_df["test_type"] == "STND"]
+        stnd_impulse_mean = stnd_data["J"].mean() if not stnd_data.empty else 1.0
+        stnd_force_mean = stnd_data["F"].mean() if not stnd_data.empty else 1.0
+
         # Calculate stats for each configuration
         for config in ["STND", "DF", "DS", "SL", "BR"]:
             config_data = results_df[results_df["test_type"] == config]
@@ -362,41 +383,34 @@ class ImpactAnalyzer:
                 ((config_data["J"] * 4.44822) ** 2) / (2 * mass_kg) / 1e6
             )  # to MJ
 
+            # Calculate percentages relative to STND
+            impulse_pct = (
+                ((config_data["J"].mean() / stnd_impulse_mean) - 1) * 100
+                if stnd_impulse_mean > 0
+                else 0
+            )
+            force_pct = (
+                ((config_data["F"].mean() / stnd_force_mean) - 1) * 100
+                if stnd_force_mean > 0
+                else 0
+            )
+            energy_pct = impulse_pct  # Energy percentage same as impulse since E ∝ J²
+
             config_stats[config] = {
-                "name": config_names[config],
+                "name": config_names.get(config, config),
                 "n_runs": len(config_data),
                 "impulse_mean": impulse_kns.mean(),
                 "impulse_std": impulse_kns.std(),
+                "impulse_pct": impulse_pct,
                 "force_mean": force_kn.mean(),
                 "force_std": force_kn.std(),
+                "force_pct": force_pct,
                 "energy_mean": energy_mj.mean(),
                 "energy_std": energy_mj.std(),
+                "energy_pct": energy_pct,
             }
 
-        # Calculate percentages vs STND
-        stnd_stats = config_stats.get("STND", {})
-        if stnd_stats:
-            for config in config_stats:
-                if config != "STND":
-                    config_stats[config]["impulse_pct"] = (
-                        (
-                            config_stats[config]["impulse_mean"]
-                            / stnd_stats["impulse_mean"]
-                        )
-                        - 1
-                    ) * 100
-                    config_stats[config]["energy_pct"] = (
-                        (
-                            config_stats[config]["energy_mean"]
-                            / stnd_stats["energy_mean"]
-                        )
-                        - 1
-                    ) * 100
-                else:
-                    config_stats[config]["impulse_pct"] = 0
-                    config_stats[config]["energy_pct"] = 0
-
-        # Print beautiful table to terminal
+        # Print the table
         self._print_summary_table(config_stats)
 
         # Optionally save to file if output_dir provided
@@ -415,7 +429,8 @@ class ImpactAnalyzer:
 
                 f.write("\n\nNOTES:\n")
                 f.write(
-                    "- Impact Energy calculated assuming inelastic collision: E = impulse²/(2×mass)\n"  # noqa: B950
+                    "- Impact Energy calculated assuming inelastic collision: "
+                    "E = impulse²/(2×mass)\n"
                 )
                 f.write(
                     "- Percentages calculated relative to Standard (SD) configuration\n"
@@ -610,11 +625,21 @@ class ImpactAnalyzer:
                 if config in config_stats:
                     stats = config_stats[config]
                     f.write(
-                        f"{stats['name']} & {stats['n_runs']} & "
-                        f"{stats['impulse_mean']:.2f} & {stats['impulse_std']:.2f} & "  # noqa: B950
-                        f"{stats['impulse_pct']:+.0f}\\% & "
-                        f"{stats['force_mean']:.2f} & {stats['force_std']:.2f} & "  # noqa: B950
-                        f"{stats['energy_mean']:.0f} & {stats['energy_pct']:+.0f}\\% \\\\\n"  # noqa: B950
+                        "{name} & {n_runs} & "
+                        "{impulse_mean:.2f} & {impulse_std:.2f} & "
+                        "{impulse_pct:+.0f}\\% & "
+                        "{force_mean:.2f} & {force_std:.2f} & "
+                        "{energy_mean:.0f} & {energy_pct:+.0f}\\% \\\\n".format(
+                            name=stats["name"],
+                            n_runs=stats["n_runs"],
+                            impulse_mean=stats["impulse_mean"],
+                            impulse_std=stats["impulse_std"],
+                            impulse_pct=stats["impulse_pct"],
+                            force_mean=stats["force_mean"],
+                            force_std=stats["force_std"],
+                            energy_mean=stats["energy_mean"],
+                            energy_pct=stats["energy_pct"],
+                        )
                     )
 
             f.write("\\hline\n")
@@ -696,8 +721,8 @@ class ImpactAnalyzer:
                     f"  Mean Impulse: {row['mean_J']:.3f} ± {row['std_J']:.3f} Ns\n"
                 )
                 f.write(f"  Mean Force: {row['mean_F']:.3f} ± {row['std_F']:.3f} N\n")
-                f.write(f"  Impulse % diff from STND: {row['%diff_J'] * 100:.1f}%\n")
-                f.write(f"  Force % diff from STND: {row['%diff_F'] * 100:.1f}%\n")
+                f.write(f"  Impulse % diff from STND: {row['%diff_J']*100:.1f}%\n")
+                f.write(f"  Force % diff from STND: {row['%diff_F']*100:.1f}%\n")
                 f.write("\n")
 
         self.log.info(f"Summary report saved to: {report_path}")

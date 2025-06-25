@@ -66,13 +66,21 @@ class ImpactVisualizer:
             x = x - x.min()  # Start time from zero
 
         # Calculate properties for annotations
-        if param_y == "SUM":
+        if param_y == "All":
+            # Use SUM when "All" is specified
+            y = df["SUM"].values
+        elif param_y == "SUM":
             y = df["SUM"].values
         else:
             y = df[param_y].values
 
         max_force = np.max(y)
-        impulse = np.trapz(y, x)
+        try:
+            # Use trapezoid if available (newer numpy)
+            impulse = np.trapezoid(y, x)
+        except AttributeError:
+            # Fallback to trapz for older numpy
+            impulse = np.trapz(y, x)
 
         # Create plot
         fig = plt.figure(

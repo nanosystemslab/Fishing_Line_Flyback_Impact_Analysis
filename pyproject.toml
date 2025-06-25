@@ -49,6 +49,7 @@ sphinx-argparse = ">=0.4.0"
 typeguard = ">=2.13.3"
 xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
+pytest-cov = "^6.2.1"
 
 [tool.poetry.scripts]
 Fishing_Line_Flyback_Impact_Analysis = "Fishing_Line_Flyback_Impact_Analysis.__main__:main"

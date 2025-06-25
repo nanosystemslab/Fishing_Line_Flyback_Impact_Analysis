@@ -90,6 +90,7 @@ jobs:
       - name: Run Nox
         run: |
           nox --python=${{ matrix.python }}
+        timeout-minutes: 10
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'

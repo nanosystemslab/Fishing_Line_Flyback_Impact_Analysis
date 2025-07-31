@@ -924,3 +924,33 @@ if __name__ == "__main__":
     print("- create_summary_plots: Create all standard plots")
     print("- plot_single_file_analysis: Plot individual file analysis")
     print("\nFor usage examples, see the package documentation.")
+
+def plot_impulse_force_box_si(results: pd.DataFrame, output_dir: Path, units: str = "SI"):
+    """Plot horizontal box plots of impulse (J) and peak force (F) with configurable SI units."""
+    assert units in ("SI", "kSI", "mixed"), "Units must be one of 'SI', 'kSI', or 'mixed'"
+    unit_labels = {
+        "SI": ("Impulse (N⋅s)", "Peak Force (N)"),
+        "kSI": ("Impulse (kN⋅s)", "Peak Force (kN)"),
+        "mixed": ("Impulse (N⋅s)", "Peak Force (kN)"),
+    }
+    scale_factors = {
+        "SI": (1, 1),
+        "kSI": (1e-3, 1e-3),
+        "mixed": (1, 1e-3),
+    }
+    label_j, label_f = unit_labels[units]
+    scale_j, scale_f = scale_factors[units]
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    plt.rcParams.update({"font.size": 20})
+    axes[0].boxplot(results["J"] * scale_j, vert=False)
+    axes[0].set_xlabel(label_j)
+    axes[0].set_title("Impulse")
+
+    axes[1].boxplot(results["F"] * scale_f, vert=False)
+    axes[1].set_xlabel(label_f)
+    axes[1].set_title("Peak Force")
+
+    for ext in [".svg", ".png"]:
+        fig.savefig(output_dir / f"plot-box-J-F-{units}{ext}", dpi=600, bbox_inches="tight")
+    plt.close(fig)

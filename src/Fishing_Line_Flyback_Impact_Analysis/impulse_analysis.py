@@ -869,7 +869,7 @@ def run_impulse_analysis(data_dir: Union[str, Path] = "data/csv",
 def plot_impulse_force_box_si(df: pd.DataFrame, output_dir: Union[str, Path], 
                               units: str = "SI", dpi: int = 600) -> None:
     """
-    Create horizontal box plots for impulse and force in publication style.
+    Create horizontal box plots for impulse and force in publication style with background overlay.
     
     Args:
         df: DataFrame with impulse analysis results
@@ -906,25 +906,25 @@ def plot_impulse_force_box_si(df: pd.DataFrame, output_dir: Union[str, Path],
         'Standard': '#9467bd'      # Purple (STND)
     }
     
-    # Unit conversions and labels (using ⋅ dot operator with DejaVu Sans)
+    # Unit conversions and labels
     if units == "SI":
-        impulse_data = df_plot['total_abs_impulse']  # Already in N⋅s
-        force_data = df_plot['peak_force']           # Already in N
+        impulse_data = df_plot['total_abs_impulse']
+        force_data = df_plot['peak_force']
         impulse_label = "Impulse Magnitude (N⋅s)"
         force_label = "Peak Force (N)"
         suffix = "SI"
     elif units == "kSI":
-        impulse_data = df_plot['total_abs_impulse'] / 1000  # N⋅s → kN⋅s
-        force_data = df_plot['peak_force'] / 1000           # N → kN
-        df_plot['total_abs_impulse'] = df_plot['total_abs_impulse'] / 1000  # N⋅s → kN⋅s
-        df_plot['peak_force'] = df_plot['peak_force'] / 1000           # N → kN
+        impulse_data = df_plot['total_abs_impulse'] / 1000
+        force_data = df_plot['peak_force'] / 1000
+        df_plot['total_abs_impulse'] = df_plot['total_abs_impulse'] / 1000
+        df_plot['peak_force'] = df_plot['peak_force'] / 1000
         impulse_label = "Impulse Magnitude (kN⋅s)"
         force_label = "Peak Force (kN)"
         suffix = "kSI"
     elif units == "mixed":
-        impulse_data = df_plot['total_abs_impulse']  # Keep N⋅s
-        force_data = df_plot['peak_force'] / 1000    # N → kN
-        df_plot['peak_force'] = df_plot['peak_force'] / 1000    # N → kN
+        impulse_data = df_plot['total_abs_impulse']
+        force_data = df_plot['peak_force'] / 1000
+        df_plot['peak_force'] = df_plot['peak_force'] / 1000
         impulse_label = "Impulse Magnitude (N⋅s)"
         force_label = "Peak Force (kN)"
         suffix = "mixed"
@@ -933,63 +933,89 @@ def plot_impulse_force_box_si(df: pd.DataFrame, output_dir: Union[str, Path],
 
     # Define material order and create ordered categorical
     material_code_order = ['Standard', 'Sliding', 'Dual Fixed', 'Dual Sliding', 'Breakaway']
-    
-    # Filter to only include materials that exist in the data
     existing_materials = [mat for mat in material_code_order if mat in df_plot['material_name'].values]
-    
-    # Create ordered categorical for proper ordering
     df_plot['material_name'] = pd.Categorical(df_plot['material_name'], 
                                              categories=existing_materials, ordered=True)
-    
-    # Create custom palette in the correct order
     custom_palette = [material_colors.get(mat, '#1f77b4') for mat in existing_materials]
     
-    # Create the plot with increased width to accommodate spacing
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 8))  # Increased from 16 to 24
+    # Create the plot
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 8))
     
-    # Increase spacing between subplots - about a plot's worth of space
-    plt.subplots_adjust(wspace=1.0)  # Increased from 0.8 to 1.0 (wspace=1.0 means 100% of subplot width)
+    # Try to load background overlay image
+    overlay_path = output_path / "plot-box-J-F-overlay.svg"
+    if overlay_path.exists():
+        try:
+            # If you have cairosvg installed, convert SVG to PNG first
+            try:
+                import cairosvg
+                png_overlay_path = output_path / "plot-box-J-F-overlay.png"
+                cairosvg.svg2png(url=str(overlay_path), write_to=str(png_overlay_path), dpi=dpi)
+                
+                # Load the PNG and set as figure background
+                import matplotlib.image as mpimg
+                img = mpimg.imread(png_overlay_path)
+                
+                # Add background image to figure
+                fig.figimage(img, xo=0, yo=0, alpha=1.0, zorder=-1)
+                print(f"  📸 Loaded background overlay: {overlay_path.name}")
+                
+            except ImportError:
+                print("  ⚠️  cairosvg not available - install with: pip install cairosvg")
+                
+        except Exception as e:
+            print(f"  ❌ Could not load overlay: {e}")
     
-    # Impulse box plot (horizontal) - using hue to fix seaborn warning
+    plt.subplots_adjust(wspace=1.0)
+
+    flier_props = dict(marker='o', markerfacecolor='slategray', markersize=10, 
+                      markeredgecolor='black', markeredgewidth=1, alpha=0.8)
+    
+    # Create box plots with transparency to show background
     sns.boxplot(data=df_plot, 
                 y='material_name', x='total_abs_impulse',
                 ax=ax1, palette=custom_palette, linewidth=2, 
-                order=existing_materials, hue='material_name', legend=False)
+                order=existing_materials, hue='material_name', legend=False,
+                flierprops=flier_props)
+    
     ax1.set_xlabel(impulse_label, fontsize=24, fontfamily='DejaVu Sans')
-    ax1.set_ylabel(' ', fontsize=20, fontfamily='DejaVu Sans')
+    ax1.set_ylabel(' ', fontsize=24, fontfamily='DejaVu Sans')
     ax1.tick_params(axis='both', which='major', labelsize=20)
     ax1.grid(True, alpha=0.3)
     
-    # Force box plot (horizontal) - using hue to fix seaborn warning
+    # Make plot background transparent so overlay shows through
+    ax1.patch.set_alpha(0.0)
+    
+    # Force box plot
     sns.boxplot(data=df_plot,
                 y='material_name', x='peak_force', 
                 ax=ax2, palette=custom_palette, linewidth=2, 
-                order=existing_materials, hue='material_name', legend=False)
+                order=existing_materials, hue='material_name', legend=False,
+                flierprops=flier_props)
+        
     ax2.set_xlabel(force_label, fontsize=24, fontfamily='DejaVu Sans')
-    ax2.set_ylabel(' ', fontsize=20, fontfamily='DejaVu Sans')
+    ax2.set_ylabel(' ', fontsize=24, fontfamily='DejaVu Sans')
     ax2.set_yticklabels([])
     ax2.tick_params(axis='x', which='major', labelsize=20, left=False, labelleft=False)
     ax2.grid(True, alpha=0.3)
     
-    # Tight layout (but this will be overridden by subplots_adjust)
-    plt.tight_layout()
+    # Make plot background transparent so overlay shows through
+    ax2.patch.set_alpha(0.0)
     
-    # Re-apply the spacing after tight_layout
+    plt.tight_layout()
     plt.subplots_adjust(wspace=1.0)
     
     # Save with high quality
-    svg_path = output_path / f"plot-box-J-F-{suffix}.svg"
-    png_path = output_path / f"plot-box-J-F-{suffix}.png"
+    svg_path = output_path / f"plot-box-J-F-{suffix}-with-overlay.svg"
+    png_path = output_path / f"plot-box-J-F-{suffix}-with-overlay.png"
     
     plt.savefig(svg_path, format='svg', dpi=dpi, bbox_inches='tight', 
-                transparent=True)
+                facecolor='white', transparent=False)
     plt.savefig(png_path, format='png', dpi=dpi, bbox_inches='tight',
-                transparent=True)
+                facecolor='white', transparent=False)
     
     plt.close()
     
     print(f"  ✅ Saved: {svg_path.name} and {png_path.name}")
-
 
 def create_impulse_visualizations(results: List[Dict], output_dir: Path):
     """Create individual impulse visualization plots as separate files."""

@@ -30,3 +30,5 @@ node_modules/
 *.csv
 *.h5
 impulse_analysis
+
+.DS_Store  

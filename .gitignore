@@ -15,3 +15,18 @@ data/
 # Ignore Output Data
 out/
 node_modules/
+
+
+# Ignore GUI till ready for release
+/src/Fishing_Line_Flyback_Impact_Analysis/gui/
+
+# Ignore Legacy
+/src/Fishing_Line_Flyback_Impact_Analysis/legacy/
+
+
+# ignore outputs and plots
+*.png
+*.pdf
+*.csv
+*.h5
+impulse_analysis

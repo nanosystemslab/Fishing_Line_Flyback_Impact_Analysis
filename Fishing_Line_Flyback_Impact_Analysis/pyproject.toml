@@ -27,6 +27,10 @@ h5py = "^3.14.0"
 click = "^8.2.1"
 plotly = "^6.2.0"
 cairosvg = "^2.8.2"
+pyqt5 = "^5.15.11"
+pyqtgraph = "^0.13.7"
+pyopengl = "^3.1.9"
+pyopengl-accelerate = "^3.1.9"
 
 [tool.poetry.group.dev.dependencies]
 Pygments = ">=2.10.0"
@@ -56,7 +60,12 @@ myst-parser = {version = ">=0.16.1"}
 pytest-cov = "^6.2.1"
 
 [tool.poetry.scripts]
+# Main entry point (long form)
 Fishing_Line_Flyback_Impact_Analysis = "Fishing_Line_Flyback_Impact_Analysis.__main__:main"
+# Convenient aliases
+fishing-line-analysis = "Fishing_Line_Flyback_Impact_Analysis.__main__:main"
+fla = "Fishing_Line_Flyback_Impact_Analysis.__main__:main"
+impulse = "Fishing_Line_Flyback_Impact_Analysis.__main__:main"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]

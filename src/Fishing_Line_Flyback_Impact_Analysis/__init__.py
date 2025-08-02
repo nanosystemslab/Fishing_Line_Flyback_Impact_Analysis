@@ -70,7 +70,7 @@ except ImportError:
     launch_gui = None
 
 # Package metadata
-__version__ = "3.0.0"  # Major version bump - impulse-focused architecture
+__version__ = "1.0.0"  # Major version bump - impulse-focused architecture
 __author__ = "Nanosystems Lab"
 __description__ = "Fishing Line Flyback Impact Analysis - Impulse-Focused v3.0"
 

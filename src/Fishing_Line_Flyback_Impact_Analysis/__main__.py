@@ -23,7 +23,7 @@ from .shared import MEASURED_LINE_MASS_GRAMS
 
 
 @click.group()
-@click.version_option(version="3.0.0")
+@click.version_option(version="1.0.0")
 def main():
     """🎯 Fishing Line Flyback Impact Analysis v3.0 - Impulse-Focused.
 

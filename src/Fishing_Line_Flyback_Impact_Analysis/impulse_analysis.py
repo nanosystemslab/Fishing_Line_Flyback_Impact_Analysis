@@ -1,5 +1,4 @@
-"""
-Impulse Analysis Module for Fishing Line Flyback Impact Analysis
+"""Impulse Analysis Module for Fishing Line Flyback Impact Analysis.
 
 This module provides impulse-based analysis (∫ F(t) dt) as the primary
 analysis method for fishing line flyback testing. It focuses on total
@@ -16,7 +15,6 @@ Key Features:
 """
 
 import platform
-import warnings
 from pathlib import Path
 from typing import Dict
 from typing import List
@@ -24,22 +22,9 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
-from scipy import integrate
-from scipy import stats
-from scipy.signal import savgol_filter
-
-
-# Configure matplotlib for cross-platform compatibility
-if platform.system() == "Darwin":  # macOS
-    plt.rcParams["font.family"] = ["Helvetica", "Arial", "sans-serif"]
-else:
-    plt.rcParams["font.family"] = ["DejaVu Sans", "Arial", "sans-serif"]
-plt.rcParams["font.size"] = 10
 
 # Import shared components
 from .shared import CONFIG_WEIGHTS
@@ -54,9 +39,16 @@ from .shared import get_time_array
 from .shared import load_csv_file
 
 
+# Configure matplotlib for cross-platform compatibility
+if platform.system() == "Darwin":  # macOS
+    plt.rcParams["font.family"] = ["Helvetica", "Arial", "sans-serif"]
+else:
+    plt.rcParams["font.family"] = ["DejaVu Sans", "Arial", "sans-serif"]
+plt.rcParams["font.size"] = 10
+
+
 class ImpulseAnalyzer:
-    """
-    Impulse-based analyzer for fishing line flyback impact testing.
+    """Impulse-based analyzer for fishing line flyback impact testing.
 
     Focuses on total momentum transfer: Impulse = ∫ F(t) dt
     This provides a cleaner, more direct measurement of fishing line
@@ -71,8 +63,7 @@ class ImpulseAnalyzer:
         sampling_rate: float = DEFAULT_SAMPLING_RATE,
         impact_threshold_factor: float = IMPACT_THRESHOLD_FACTOR,
     ):
-        """
-        Initialize impulse analyzer.
+        """Initialize impulse analyzer.
 
         Args:
             material_code: Configuration code (e.g., 'STND', 'DF')
@@ -99,8 +90,7 @@ class ImpulseAnalyzer:
             self.total_mass = None
 
     def find_impact_boundaries(self, force: np.ndarray) -> Tuple[int, int]:
-        """
-        Find start and end indices of impact event.
+        """Find start and end indices of impact event.
 
         Args:
             force: Force data array
@@ -160,8 +150,7 @@ class ImpulseAnalyzer:
         return start_idx, end_idx
 
     def calculate_impulse_metrics(self, force: np.ndarray, time: np.ndarray) -> Dict:
-        """
-        Calculate impulse-based metrics from force and time data.
+        """Calculate impulse-based metrics from force and time data.
 
         Args:
             force: Force data in Newtons
@@ -183,9 +172,6 @@ class ImpulseAnalyzer:
 
             if len(impact_force) == 0:
                 return {"error": "No impact region identified"}
-
-            # Calculate impulse metrics
-            dt = np.diff(time).mean() if len(time) > 1 else self.dt
 
             # Total impulse (signed)
             total_impulse = np.trapz(force, time)
@@ -264,8 +250,7 @@ class ImpulseAnalyzer:
         impact_end: int,
         filename: str = "unknown",
     ):
-        """
-        Plot force data with integration boundaries for validation.
+        """Plot force data with integration boundaries for validation.
 
         Args:
             force: Force data
@@ -283,14 +268,14 @@ class ImpulseAnalyzer:
             color="red",
             linestyle="--",
             linewidth=2,
-            label=f"Impact Start ({time[impact_start]*1000:.1f} ms)",
+            label=f"Impact Start ({time[impact_start] * 1000:.1f} ms)",
         )
         ax1.axvline(
             time[impact_end] * 1000,
             color="red",
             linestyle="--",
             linewidth=2,
-            label=f"Impact End ({time[impact_end]*1000:.1f} ms)",
+            label=f"Impact End ({time[impact_end] * 1000:.1f} ms)",
         )
 
         # Highlight impact region
@@ -370,8 +355,7 @@ class ImpulseAnalyzer:
     def analyze_csv_file(
         self, csv_path: Union[str, Path], show_plot: bool = False
     ) -> Dict:
-        """
-        Analyze a single CSV file using impulse method.
+        """Analyze a single CSV file using impulse method.
 
         Args:
             csv_path: Path to CSV file
@@ -450,8 +434,7 @@ def analyze_single_file_with_impulse(
     line_mass_fraction: float = LINE_MASS_FRACTION,
     show_plot: bool = False,
 ) -> Dict:
-    """
-    Analyze single file with impulse method (main interface function).
+    """Analyze single file with impulse method (main interface function).
 
     Args:
         file_path: Path to CSV file
@@ -477,12 +460,11 @@ def analyze_single_file_with_impulse(
     return analyzer.analyze_csv_file(file_path, show_plot=show_plot)
 
 
-def run_impulse_analysis(
+def run_impulse_analysis(  # noqa: C901
     data_dir: Union[str, Path] = "data/csv",
     output_dir: Union[str, Path] = "impulse_analysis",
 ) -> List[Dict]:
-    """
-    Run impulse analysis on all CSV files in directory (main batch function).
+    """Run impulse analysis on all CSV files in directory (main batch function).
 
     Args:
         data_dir: Directory containing CSV files
@@ -513,12 +495,13 @@ def run_impulse_analysis(
     print()
 
     # Show configuration reference
-    print(f"⚖️  CONFIGURATION REFERENCE:")
+    print("⚖️  CONFIGURATION REFERENCE:")
     for config, weight_kg in sorted(CONFIG_WEIGHTS.items()):
         line_mass_kg = 0.0388 * LINE_MASS_FRACTION
         total_mass_kg = weight_kg + line_mass_kg
         print(
-            f"   {config:4s}: {weight_kg*1000:2.0f}g + {line_mass_kg*1000:.0f}g = {total_mass_kg*1000:.0f}g total"
+            f"{config:4s}: {weight_kg * 1000:2.0f}g + "
+            f"{line_mass_kg * 1000:.0f}g = {total_mass_kg * 1000:.f}g total"
         )
     print()
 
@@ -556,7 +539,8 @@ def run_impulse_analysis(
                 # Show quick metrics
                 direction = "→" if impulse > 0 else "←"
                 print(
-                    f"✅ {material_code} | {impulse:+.6f} N*s {direction} | {peak_force:4.0f}N | {duration_ms:4.1f}ms"
+                    f"✅ {material_code} | {impulse:+.6f} N*s {direction} |"
+                    f" {peak_force:4.0f}N | {duration_ms:4.1f}ms"
                 )
             else:
                 print(f"❌ ERROR: {result['error']}")
@@ -595,36 +579,31 @@ def run_impulse_analysis(
             peak_forces = results_df["peak_force"].values
             durations = results_df["impact_duration"].values * 1000  # Convert to ms
 
-            print(f"📊 SUMMARY STATISTICS:")
             print(
-                f"   Total impulse range: {np.min(impulses):+.6f} to {np.max(impulses):+.6f} N*s"
+                "Total impulse range: {:+.6f} to {:+.6f} N*s".format(
+                    np.min(impulses), np.max(impulses)
+                )
             )
             print(
-                f"   Absolute impulse range: {np.min(abs_impulses):.6f} to {np.max(abs_impulses):.6f} N*s"
+                "Absolute impulse range: {:.6f} to {:.6f} N*s".format(
+                    np.min(abs_impulses), np.max(abs_impulses)
+                )
             )
             print(
-                f"   Peak force range: {np.min(peak_forces):.0f} to {np.max(peak_forces):.0f} N"
+                "Peak force range: {:.0f} to {:.0f} N".format(
+                    np.min(peak_forces), np.max(peak_forces)
+                )
             )
             print(
-                f"   Duration range: {np.min(durations):.1f} to {np.max(durations):.1f} ms"
+                "Duration range: {:.1f} to {:.1f} ms".format(
+                    np.min(durations), np.max(durations)
+                )
             )
             print()
 
             # Material breakdown
             if "material_type" in results_df.columns:
-                print(f"📋 MATERIAL BREAKDOWN:")
-                material_stats = (
-                    results_df.groupby("material_type")
-                    .agg(
-                        {
-                            "total_impulse": ["count", "mean", "std"],
-                            "total_abs_impulse": "mean",
-                            "peak_force": "mean",
-                        }
-                    )
-                    .round(6)
-                )
-
+                print("📋 MATERIAL BREAKDOWN:")
                 for material in sorted(results_df["material_type"].unique()):
                     material_data = results_df[results_df["material_type"] == material]
                     count = len(material_data)
@@ -660,8 +639,7 @@ def run_impulse_analysis(
 def create_impulse_boxplots(
     results: List[Dict], output_dir: Path, units: str = "SI"
 ) -> None:
-    """
-    Create publication-style box plots for impulse analysis results.
+    """Create publication-style box plots for impulse analysis results.
 
     Args:
         results: List of analysis results

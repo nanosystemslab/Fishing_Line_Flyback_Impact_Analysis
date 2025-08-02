@@ -1,5 +1,4 @@
-"""
-Fishing Line Flyback Impact Analysis Package v3.0
+"""Fishing Line Flyback Impact Analysis Package v3.0.
 
 IMPULSE-FOCUSED VERSION: Streamlined for momentum transfer analysis.
 
@@ -129,8 +128,7 @@ except ImportError:
 
 # Package-level convenience functions
 def quick_analysis(file_path, show_plot=False):
-    """
-    Quick analysis of a single file with sensible defaults.
+    """Quick analysis of a single file with sensible defaults.
 
     Args:
         file_path: Path to CSV file
@@ -147,8 +145,7 @@ def quick_analysis(file_path, show_plot=False):
 
 
 def batch_analysis(data_directory, output_directory=None):
-    """
-    Batch analysis of all CSV files in a directory.
+    """Batch analysis of all CSV files in a directory.
 
     Args:
         data_directory: Directory containing CSV files
@@ -169,8 +166,7 @@ def batch_analysis(data_directory, output_directory=None):
 
 
 def get_configuration_info():
-    """
-    Get information about hardware configurations and mass calculations.
+    """Get information about hardware configurations and mass calculations.
 
     Returns:
         Dictionary with configuration details

@@ -1,5 +1,4 @@
-"""
-Shared constants and configurations for Fishing Line Flyback Impact Analysis
+"""Shared constants and configurations for Fishing Line Flyback Impact Analysis.
 
 This module contains constants used by both impulse and legacy kinetic energy analysis.
 """

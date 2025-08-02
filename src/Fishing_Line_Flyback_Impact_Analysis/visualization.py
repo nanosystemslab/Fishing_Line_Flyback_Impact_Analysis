@@ -1,5 +1,4 @@
-"""
-Visualization Module for Fishing Line Flyback Impact Analysis v3.0
+"""Visualization Module for Fishing Line Flyback Impact Analysis v3.0.
 
 This module provides visualization functions focused on impulse analysis,
 with the essential plotting capabilities for force curves, single file analysis,
@@ -20,12 +19,10 @@ Removed in v3.0:
 """
 
 import platform
-import warnings
 from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 import matplotlib.patches as patches
@@ -34,9 +31,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.widgets import Button
-from matplotlib.widgets import SpanSelector
 
+# Import impulse analysis for plotting
+from .impulse_analysis import analyze_single_file_with_impulse
+
+# Import shared components
+from .shared import MATERIAL_NAMES
+from .shared import calculate_total_force
 from .shared import extract_material_code
+from .shared import get_time_array
+from .shared import load_csv_file
 
 
 # Configure matplotlib for cross-platform compatibility
@@ -51,16 +55,6 @@ plt.rcParams["figure.dpi"] = 100
 plt.rcParams["savefig.dpi"] = 300
 plt.rcParams["savefig.bbox"] = "tight"
 
-# Import impulse analysis for plotting
-from .impulse_analysis import analyze_single_file_with_impulse
-
-# Import shared components
-from .shared import MATERIAL_NAMES
-from .shared import calculate_total_force
-from .shared import extract_material_code
-from .shared import get_time_array
-from .shared import load_csv_file
-
 
 # =============================================================================
 # CORE VISUALIZATION FUNCTIONS (KEPT)
@@ -74,8 +68,7 @@ def show_force_preview(
     show_analysis_preview: bool = False,
     mass: float = 0.045,
 ) -> plt.Figure:
-    """
-    Show a preview of force vs time data for visual inspection.
+    """Show a preview of force vs time data for visual inspection.
 
     This function creates an interactive plot showing the complete force curve,
     allowing you to examine the data characteristics, identify impact regions,
@@ -107,11 +100,11 @@ def show_force_preview(
 
     # Add statistics text
     stats_text = f"""Data Statistics:
-Duration: {time_data[-1]:.4f} s ({time_ms[-1]:.1f} ms)
-Points: {len(force_data):,}
-Force Range: {np.min(force_data):.1f} to {np.max(force_data):.1f} N
-Peak |Force|: {np.max(np.abs(force_data)):.1f} N
-RMS Force: {np.sqrt(np.mean(force_data**2)):.1f} N"""
+            Duration: {time_data[-1]:.4f} s ({time_ms[-1]:.1f} ms)
+            Points: {len(force_data):,}
+            Force Range: {np.min(force_data):.1f} to {np.max(force_data):.1f} N
+            Peak |Force|: {np.max(np.abs(force_data)):.1f} N
+            RMS Force: {np.sqrt(np.mean(force_data**2)):.1f} N"""
 
     ax1.text(
         0.02,
@@ -191,7 +184,7 @@ RMS Force: {np.sqrt(np.mean(force_data**2)):.1f} N"""
 
             # Add analysis info
             duration_ms = (time_data[impact_end] - time_data[impact_start]) * 1000
-            analysis_text = f"Analysis Preview:\nImpact Duration: {duration_ms:.1f} ms\nMaterial: {material_code}"
+            analysis_text = f"Analysis Preview:\nImpact Duration: {duration_ms:.1f} ms\nMaterial: {material_code}"  # noqa: B950
             ax2.text(
                 0.98,
                 0.02,
@@ -217,8 +210,7 @@ def plot_single_file_analysis(
     output_dir: Optional[Union[str, Path]] = None,
     show_plot: bool = True,
 ) -> None:
-    """
-    Create analysis plot for a single CSV file using impulse method.
+    """Create analysis plot for a single CSV file using impulse method.
 
     This function loads a CSV file, performs impulse analysis, and creates
     a detailed plot showing the force curve with analysis boundaries and results.
@@ -269,8 +261,7 @@ def plot_single_file_analysis(
 def create_single_file_analysis_plot(
     force_data: np.ndarray, time_data: np.ndarray, analysis_result: Dict, filename: str
 ) -> plt.Figure:
-    """
-    Create detailed analysis plot for a single file with impulse results.
+    """Create detailed analysis plot for a single file with impulse results.
 
     Args:
         force_data: Force data in Newtons
@@ -407,34 +398,28 @@ def create_single_file_analysis_plot(
     material_name = MATERIAL_NAMES.get(material_code, material_code)
 
     summary_text = f"""IMPULSE ANALYSIS RESULTS
-{'=' * 30}
-
-File: {filename}
-Material: {material_code} ({material_name})
-
-IMPULSE METRICS:
-Total Impulse: {total_impulse:+.6f} N⋅s
-Absolute Impulse: {analysis_result.get('total_abs_impulse', 0):.6f} N⋅s
-Impact Impulse: {analysis_result.get('impact_impulse', 0):+.6f} N⋅s
-
-FORCE CHARACTERISTICS:
-Peak Force: {peak_force:.0f} N
-Peak (+): {analysis_result.get('peak_force_positive', 0):.0f} N
-Peak (-): {analysis_result.get('peak_force_negative', 0):.0f} N
-RMS Force: {analysis_result.get('rms_force', 0):.0f} N
-
-TIMING:
-Impact Duration: {impact_duration:.1f} ms
-Total Duration: {time_ms[-1]:.1f} ms
-Sampling Rate: {analysis_result.get('sampling_rate_hz', 0):.0f} Hz
-
-EQUIVALENT METRICS:
-Velocity: {analysis_result.get('equivalent_velocity', 0):.0f} m/s
-Kinetic Energy: {analysis_result.get('equivalent_kinetic_energy', 0):.6f} J
-
-MASS BREAKDOWN:
-{analysis_result.get('mass_breakdown', {})}
-"""
+        {'=' * 30}
+        File: {filename}
+        Material: {material_code} ({material_name})\n
+        IMPULSE METRICS:
+        Total Impulse: {total_impulse:+.6f} N⋅s
+        Absolute Impulse: {analysis_result.get('total_abs_impulse', 0):.6f} N⋅s
+        Impact Impulse: {analysis_result.get('impact_impulse', 0):+.6f} N⋅s\n
+        FORCE CHARACTERISTICS:
+        Peak Force: {peak_force:.0f} N
+        Peak (+): {analysis_result.get('peak_force_positive', 0):.0f} N
+        Peak (-): {analysis_result.get('peak_force_negative', 0):.0f} N
+        RMS Force: {analysis_result.get('rms_force', 0):.0f} N\n
+        TIMING:
+        Impact Duration: {impact_duration:.1f} ms
+        Total Duration: {time_ms[-1]:.1f} ms
+        Sampling Rate: {analysis_result.get('sampling_rate_hz', 0):.0f} Hz \n
+        EQUIVALENT METRICS:
+        Velocity: {analysis_result.get('equivalent_velocity', 0):.0f} m/s
+        Kinetic Energy: {analysis_result.get('equivalent_kinetic_energy', 0):.6f} J \n
+        MASS BREAKDOWN:
+        {analysis_result.get('mass_breakdown', {})}
+        """
 
     ax4.text(
         0.05,
@@ -460,8 +445,7 @@ MASS BREAKDOWN:
 def create_impulse_material_comparison(
     results: List[Dict], output_dir: Union[str, Path]
 ) -> None:
-    """
-    Create material comparison plots for impulse analysis results.
+    """Create material comparison plots for impulse analysis results.
 
     Args:
         results: List of impulse analysis results
@@ -540,8 +524,7 @@ def create_impulse_material_comparison(
 def create_impulse_summary_statistics(
     results: List[Dict], output_dir: Union[str, Path]
 ) -> str:
-    """
-    Create a text summary of impulse analysis results.
+    """Create a text summary of impulse analysis results.
 
     Args:
         results: List of analysis results
@@ -565,48 +548,33 @@ def create_impulse_summary_statistics(
     durations = [r["impact_duration"] * 1000 for r in valid_results]  # Convert to ms
 
     summary = f"""
-IMPULSE ANALYSIS SUMMARY
-{'=' * 40}
-Total files processed: {len(results)}
-Successful analyses: {len(valid_results)}
-Success rate: {len(valid_results)/len(results)*100:.1f}%
-
-IMPULSE STATISTICS:
-Total impulse range: {np.min(impulses):+.6f} to {np.max(impulses):+.6f} N⋅s
-Mean total impulse: {np.mean(impulses):+.6f} N⋅s
-Std total impulse: {np.std(impulses):.6f} N⋅s
-
-Absolute impulse range: {np.min(abs_impulses):.6f} to {np.max(abs_impulses):.6f} N⋅s
-Mean absolute impulse: {np.mean(abs_impulses):.6f} N⋅s
-Std absolute impulse: {np.std(abs_impulses):.6f} N⋅s
-
-FORCE STATISTICS:
-Peak force range: {np.min(peak_forces):.0f} to {np.max(peak_forces):.0f} N
-Mean peak force: {np.mean(peak_forces):.0f} N
-Std peak force: {np.std(peak_forces):.0f} N
-
-DURATION STATISTICS:
-Duration range: {np.min(durations):.1f} to {np.max(durations):.1f} ms
-Mean duration: {np.mean(durations):.1f} ms
-Std duration: {np.std(durations):.1f} ms
-"""
+        IMPULSE ANALYSIS SUMMARY
+        {'=' * 40}
+        Total files processed: {len(results)}
+        Successful analyses: {len(valid_results)}
+        Success rate: {len(valid_results) / len(results) * 100:.1f}%\n
+        IMPULSE STATISTICS:
+        Total impulse range: {np.min(impulses):+.6f} to {np.max(impulses):+.6f} N⋅s
+        Mean total impulse: {np.mean(impulses):+.6f} N⋅s
+        Std total impulse: {np.std(impulses):.6f} N⋅s\n
+        Absolute impulse range: {np.min(abs_impulses):.6f} to
+        {np.max(abs_impulses):.6f} N⋅
+        Mean absolute impulse: {np.mean(abs_impulses):.6f} N⋅s
+        Std absolute impulse: {np.std(abs_impulses):.6f} N⋅s\n
+        FORCE STATISTICS:
+        Peak force range: {np.min(peak_forces):.0f} to {np.max(peak_forces):.0f} N
+        Mean peak force: {np.mean(peak_forces):.0f} N
+        Std peak force: {np.std(peak_forces):.0f} N\n
+        DURATION STATISTICS:
+        Duration range: {np.min(durations):.1f} to {np.max(durations):.1f} ms
+        Mean duration: {np.mean(durations):.1f} ms
+        Std duration: {np.std(durations):.1f} ms
+        """
 
     # Add material breakdown if available
     if valid_results and "material_type" in valid_results[0]:
         df = pd.DataFrame(valid_results)
-        material_stats = (
-            df.groupby("material_type")
-            .agg(
-                {
-                    "total_impulse": ["count", "mean", "std"],
-                    "total_abs_impulse": "mean",
-                    "peak_force": "mean",
-                }
-            )
-            .round(6)
-        )
-
-        summary += f"\nMATERIAL BREAKDOWN:\n"
+        summary += "\nMATERIAL BREAKDOWN:\n"
         for material in sorted(df["material_type"].unique()):
             material_data = df[df["material_type"] == material]
             count = len(material_data)
@@ -635,14 +603,15 @@ Std duration: {np.std(durations):.1f} ms
 # =============================================================================
 
 
-def create_interactive_force_explorer(
+def create_interactive_force_explorer(  # noqa: C901
     force_data: np.ndarray,
     time_data: np.ndarray,
     filename: str,
     show_analysis_preview: bool = False,
 ) -> None:
-    """
-    Create truly interactive force data explorer with zoom, pan, and selection capabilities.
+    """Create interactive force data explorer.
+
+    Capable of zoom, pan, and selection capabilities.
 
     Features:
     - Mouse wheel zoom
@@ -723,6 +692,8 @@ def create_interactive_force_explorer(
             )
             boundary_lines = [start_line, end_line]
 
+            print(boundary_lines)
+
             # Highlight impact region
             impact_region = patches.Rectangle(
                 (time_ms[impact_start], ax_main.get_ylim()[0]),
@@ -754,38 +725,32 @@ def create_interactive_force_explorer(
         if np.any(view_mask):
             view_time = time_ms[view_mask]
             view_force = force_data[view_mask]
+            stats_text = f"""CURRENT VIEW STATISTICS
+                {'=' * 30}
+                Time Range: {xlim[0]:.1f} - {xlim[1]:.1f} ms
+                Duration: {xlim[1] - xlim[0]:.1f} ms
+                Data Points in View: {np.sum(view_mask):,}
+                View Time: {view_time}
+                Force Statistics:
+                  Min: {np.min(view_force):.1f} N
+                  Max: {np.max(view_force):.1f} N
+                  Peak |Force|: {np.max(np.abs(view_force)):.1f} N
+                  Mean: {np.mean(view_force):.1f} N
+                  RMS: {np.sqrt(np.mean(view_force**2)):.1f} N
+                  Std Dev: {np.std(view_force):.1f} N
+                FULL DATA STATISTICS
+                {'=' * 20}
+                Total Duration: {time_ms[-1]:.1f} ms
+                Total Points: {len(force_data):,}
+                Global Min: {np.min(force_data):.1f} N
+                Global Max: {np.max(force_data):.1f} N
+                Global Peak |F|: {np.max(np.abs(force_data)):.1f} N
+                CONTROLS:
+                - Mouse wheel: Zoom in/out
+                - Click + drag: Pan around
+                - Select region below to zoom
+                - Use Reset button to restore view"""
 
-            stats_text = (
-                f"""CURRENT VIEW STATISTICS
-{'=' * 30}
-Time Range: {xlim[0]:.1f} - {xlim[1]:.1f} ms
-Duration: {xlim[1] - xlim[0]:.1f} ms
-Data Points in View: {np.sum(view_mask):,}
-
-Force Statistics:
-  Min: {np.min(view_force):.1f} N
-  Max: {np.max(view_force):.1f} N
-  Peak |Force|: {np.max(np.abs(view_force)):.1f} N
-  Mean: {np.mean(view_force):.1f} N
-  RMS: {np.sqrt(np.mean(view_force**2)):.1f} N
-  Std Dev: {np.std(view_force):.1f} N
-
-FULL DATA STATISTICS
-{'=' * 20}
-Total Duration: {time_ms[-1]:.1f} ms
-Total Points: {len(force_data):,}
-Global Min: {np.min(force_data):.1f} N
-Global Max: {np.max(force_data):.1f} N
-Global Peak |F|: {np.max(np.abs(force_data)):.1f} N
-
-CONTROLS:
-• Mouse wheel: Zoom in/out
-• Click + drag: Pan around
-• Select region below to zoom
-• Use Reset button to restore view"""""
-                ""
-                ""
-            )
         else:
             stats_text = "No data points in current view"
 
@@ -818,7 +783,7 @@ CONTROLS:
             ax_zoom.set_xlim(xmin, xmax)
             ax_zoom.set_ylim(np.min(zoom_force) * 1.1, np.max(zoom_force) * 1.1)
             ax_zoom.set_title(
-                f"Zoomed View: {xmin:.1f} - {xmax:.1f} ms ({xmax-xmin:.1f} ms duration)"
+                f"Zoomed View: {xmin:.1f} - {xmax:.1f} ms ({xmax - xmin:.1f} ms duration)"  # noqa: B950
             )
 
             # Also zoom main plot
@@ -828,15 +793,6 @@ CONTROLS:
             update_stats((xmin, xmax))
 
             fig.canvas.draw()
-
-    # Create span selector
-    span = SpanSelector(
-        ax_main,
-        onselect,
-        direction="horizontal",
-        useblit=True,
-        rectprops=dict(alpha=0.3, facecolor="red"),
-    )
 
     # Reset zoom function
     def reset_zoom(event):
@@ -914,11 +870,10 @@ CONTROLS:
     plt.show(block=True)  # Block until window is closed
 
 
-def create_dual_view_explorer(
+def create_dual_view_explorer(  # noqa: C901
     force_data: np.ndarray, time_data: np.ndarray, filename: str
 ) -> None:
-    """
-    Create a dual-view interactive explorer with overview and detail views.
+    """Create a dual-view interactive explorer with overview and detail views.
 
     Features:
     - Overview plot showing full data
@@ -965,67 +920,62 @@ def create_dual_view_explorer(
         if xlim is None:
             # Show overall statistics
             info_text = f"""FILE INFORMATION
-{'=' * 20}
-Filename: {filename}
-Duration: {time_ms[-1]:.1f} ms
-Sample Rate: {len(time_data)/(time_data[-1]):.0f} Hz
-Total Points: {len(force_data):,}
-
-FORCE STATISTICS
-{'=' * 16}
-Min Force: {np.min(force_data):.1f} N
-Max Force: {np.max(force_data):.1f} N
-Peak |Force|: {np.max(np.abs(force_data)):.1f} N
-Mean Force: {np.mean(force_data):.1f} N
-RMS Force: {np.sqrt(np.mean(force_data**2)):.1f} N
-Std Dev: {np.std(force_data):.1f} N
-
-INSTRUCTIONS
-{'=' * 12}
-1. Click and drag on overview
-   to select a region
-2. Selected region will appear
-   in detail view
-3. Use mouse wheel to zoom
-4. Right-click to reset
-
-SELECTION
-{'=' * 9}
-Click and drag to select region
-for detailed analysis"""
+                    {'=' * 20}
+                    Filename: {filename}
+                    Duration: {time_ms[-1]:.1f} ms
+                    Sample Rate: {len(time_data) / (time_data[-1]):.0f} Hz
+                    Total Points: {len(force_data):,}\n
+                    FORCE STATISTICS
+                    {'=' * 16}
+                    Min Force: {np.min(force_data):.1f} N
+                    Max Force: {np.max(force_data):.1f} N
+                    Peak |Force|: {np.max(np.abs(force_data)):.1f} N
+                    Mean Force: {np.mean(force_data):.1f} N
+                    RMS Force: {np.sqrt(np.mean(force_data ** 2)):.1f} N
+                    Std Dev: {np.std(force_data):.1f} N\n
+                    INSTRUCTIONS
+                    {'=' * 12}
+                    1. Click and drag on overview
+                       to select a region
+                    2. Selected region will appear
+                       in detail view
+                    3. Use mouse wheel to zoom
+                    4. Right-click to reset\
+                    SELECTION
+                    {'=' * 9}
+                    Click and drag to select region
+                    for detailed analysis"""
         else:
             # Show selection statistics
             time_mask = (time_ms >= xlim[0]) & (time_ms <= xlim[1])
             if np.any(time_mask):
                 sel_force = force_data[time_mask]
                 duration = xlim[1] - xlim[0]
+                energy_est = 0.5 * 0.072 * (np.max(np.abs(sel_force)) / 0.072) ** 2
+                impuse_est = np.trapz(np.abs(sel_force), time_ms[time_mask]) / 1000
 
                 info_text = f"""SELECTED REGION
-{'=' * 15}
-Time Range: {xlim[0]:.1f} - {xlim[1]:.1f} ms
-Duration: {duration:.1f} ms
-Points: {np.sum(time_mask):,}
-
-FORCE IN SELECTION
-{'=' * 18}
-Min: {np.min(sel_force):.1f} N
-Max: {np.max(sel_force):.1f} N
-Peak |F|: {np.max(np.abs(sel_force)):.1f} N
-Mean: {np.mean(sel_force):.1f} N
-RMS: {np.sqrt(np.mean(sel_force**2)):.1f} N
-
-FULL DATA REFERENCE
-{'=' * 19}
-Total Duration: {time_ms[-1]:.1f} ms
-Global Min: {np.min(force_data):.1f} N
-Global Max: {np.max(force_data):.1f} N
-
-ANALYSIS POTENTIAL
-{'=' * 17}
-Energy Est: {0.5 * 0.072 * (np.max(np.abs(sel_force))/0.072)**2:.6f} J
-Impulse Est: {np.trapz(np.abs(sel_force), time_ms[time_mask])/1000:.6f} N⋅s
-
-Right-click to reset selection"""
+                    {'=' * 15}
+                    Time Range: {xlim[0]:.1f} - {xlim[1]:.1f} ms
+                    Duration: {duration:.1f} ms
+                    Points: {np.sum(time_mask):,}\n
+                    FORCE IN SELECTION
+                    {'=' * 18}
+                    Min: {np.min(sel_force):.1f} N
+                    Max: {np.max(sel_force):.1f} N
+                    Peak |F|: {np.max(np.abs(sel_force)):.1f} N
+                    Mean: {np.mean(sel_force):.1f} N
+                    RMS: {np.sqrt(np.mean(sel_force**2)):.1f} N \n
+                    FULL DATA REFERENCE
+                    {'=' * 19}
+                    Total Duration: {time_ms[-1]:.1f} ms
+                    Global Min: {np.min(force_data):.1f} N
+                    Global Max: {np.max(force_data):.1f} N \n
+                    ANALYSIS POTENTIAL
+                    {'=' * 17}
+                    Energy Est: {energy_est:.6f} J
+                    Impulse Est: {impuse_est:.6f} N⋅s\n
+                    Right-click to reset selection"""
             else:
                 info_text = "No data in selection"
 
@@ -1121,15 +1071,19 @@ def show_force_preview_interactive(
     filename: str,
     show_analysis_preview: bool = False,
     style: str = "explorer",
-):
-    """
-    Show interactive force preview with multiple interaction styles.
-    """
-    # Import required widgets
-    import matplotlib.patches as patches
-    from matplotlib.widgets import Button
-    from matplotlib.widgets import SpanSelector
+) -> None:
+    """Show interactive force preview with multiple interaction styles.
 
+    Args:
+        force_data: Force data array
+        time_data: Time data array
+        filename: Name of the file
+        show_analysis_preview: Whether to show analysis boundaries
+        style: Interaction style ("explorer" or other)
+
+    Returns:
+        None
+    """
     if style != "explorer":
         # Fall back to simple static plot
         return show_force_preview(
@@ -1139,6 +1093,24 @@ def show_force_preview_interactive(
     # Convert time to milliseconds for better readability
     time_ms = time_data * 1000
 
+    # Create the interactive plot
+    fig, axes_dict = _create_interactive_figure(filename, time_ms, force_data)
+
+    # Add analysis boundaries if requested
+    if show_analysis_preview:
+        _add_analysis_boundaries(axes_dict["main"], time_ms, force_data, filename)
+
+    # Set up interactivity
+    _setup_interactive_controls(fig, axes_dict, time_ms, force_data)
+
+    _print_usage_instructions()
+    plt.show(block=True)
+
+
+def _create_interactive_figure(
+    filename: str, time_ms: np.ndarray, force_data: np.ndarray
+):
+    """Create the figure layout and initial plots."""
     # Create figure with proper scaling for large datasets
     plt.ion()  # Turn on interactive mode
 
@@ -1177,6 +1149,30 @@ def show_force_preview_interactive(
     ax_zoom.legend()
 
     # Control panel (middle right)
+    ax_controls = _create_controls_panel(fig, gs)
+
+    # Statistics panel (bottom left and middle)
+    ax_stats = fig.add_subplot(gs[2, :2])
+    ax_stats.axis("off")
+
+    # Info panel (bottom right)
+    ax_info = _create_info_panel(fig, gs, force_data, time_ms)
+
+    return fig, {
+        "main": ax_main,
+        "zoom": ax_zoom,
+        "stats": ax_stats,
+        "info": ax_info,
+        "controls": ax_controls,
+        "line_main": line_main,
+        "line_zoom": line_zoom,
+        "original_xlim": original_xlim,
+        "original_ylim": original_ylim,
+    }
+
+
+def _create_controls_panel(fig, gs):
+    """Create the controls panel with instructions."""
     ax_controls = fig.add_subplot(gs[1, 2])
     ax_controls.axis("off")
     ax_controls.text(
@@ -1211,12 +1207,11 @@ def show_force_preview_interactive(
     ax_controls.text(
         0.1, 0.1, "• Close window:\n  Exit", fontsize=9, transform=ax_controls.transAxes
     )
+    return ax_controls
 
-    # Statistics panel (bottom left and middle)
-    ax_stats = fig.add_subplot(gs[2, :2])
-    ax_stats.axis("off")
 
-    # Info panel (bottom right)
+def _create_info_panel(fig, gs, force_data: np.ndarray, time_ms: np.ndarray):
+    """Create the data info panel."""
     ax_info = fig.add_subplot(gs[2, 2])
     ax_info.axis("off")
 
@@ -1239,51 +1234,62 @@ Peak: {np.max(np.abs(force_data)):.0f} N"""
         verticalalignment="top",
         bbox=dict(boxstyle="round", facecolor="lightgreen", alpha=0.8),
     )
+    return ax_info
 
-    # Add analysis boundaries if requested
-    if show_analysis_preview:
-        try:
-            from .impulse_analysis import ImpulseAnalyzer
 
-            material_code = extract_material_code(filename)
-            analyzer = ImpulseAnalyzer(material_code=material_code)
-            impact_start, impact_end = analyzer.find_impact_boundaries(force_data)
+def _add_analysis_boundaries(
+    ax_main, time_ms: np.ndarray, force_data: np.ndarray, filename: str
+):
+    """Add analysis boundaries to the main plot."""
+    try:
+        from .impulse_analysis import ImpulseAnalyzer
 
-            # Add boundary lines to main plot
-            ax_main.axvline(
-                time_ms[impact_start],
-                color="green",
-                linestyle="--",
-                linewidth=2,
-                alpha=0.7,
-                label="Impact Start",
-            )
-            ax_main.axvline(
-                time_ms[impact_end],
-                color="red",
-                linestyle="--",
-                linewidth=2,
-                alpha=0.7,
-                label="Impact End",
-            )
+        material_code = extract_material_code(filename)
+        analyzer = ImpulseAnalyzer(material_code=material_code)
+        impact_start, impact_end = analyzer.find_impact_boundaries(force_data)
 
-            # Highlight impact region
-            impact_region = patches.Rectangle(
-                (time_ms[impact_start], original_ylim[0]),
-                time_ms[impact_end] - time_ms[impact_start],
-                original_ylim[1] - original_ylim[0],
-                alpha=0.2,
-                facecolor="yellow",
-                label="Impact Region",
-            )
-            ax_main.add_patch(impact_region)
-            ax_main.legend()
+        # Add boundary lines to main plot
+        ax_main.axvline(
+            time_ms[impact_start],
+            color="green",
+            linestyle="--",
+            linewidth=2,
+            alpha=0.7,
+            label="Impact Start",
+        )
+        ax_main.axvline(
+            time_ms[impact_end],
+            color="red",
+            linestyle="--",
+            linewidth=2,
+            alpha=0.7,
+            label="Impact End",
+        )
 
-        except Exception as e:
-            print(f"Warning: Could not add analysis preview: {e}")
+        # Highlight impact region
+        original_ylim = ax_main.get_ylim()
+        impact_region = patches.Rectangle(
+            (time_ms[impact_start], original_ylim[0]),
+            time_ms[impact_end] - time_ms[impact_start],
+            original_ylim[1] - original_ylim[0],
+            alpha=0.2,
+            facecolor="yellow",
+            label="Impact Region",
+        )
+        ax_main.add_patch(impact_region)
+        ax_main.legend()
 
-    # Function to update statistics display
+    except Exception as e:
+        print(f"Warning: Could not add analysis preview: {e}")
+
+
+def _create_stats_updater(axes_dict, time_ms: np.ndarray, force_data: np.ndarray):
+    """Create the statistics update function."""
+
     def update_stats(xlim=None, ylim=None):
+        ax_main = axes_dict["main"]
+        ax_stats = axes_dict["stats"]
+
         if xlim is None:
             xlim = ax_main.get_xlim()
         if ylim is None:
@@ -1301,7 +1307,7 @@ Peak: {np.max(np.abs(force_data)):.0f} N"""
             stats_text = f"""CURRENT VIEW STATISTICS
 {'=' * 30}
 Time Range: {xlim[0]:.0f} - {xlim[1]:.0f} ms
-Duration: {duration_view:.0f} ms ({duration_view/1000:.2f} s)
+Duration: {duration_view:.0f} ms ({duration_view / 1000:.2f} s)
 Data Points: {np.sum(view_mask):,}
 
 Force Statistics:
@@ -1329,11 +1335,19 @@ Zoom Level: {(time_ms[-1] - time_ms[0]) / duration_view:.1f}x"""
             bbox=dict(boxstyle="round", facecolor="lightblue", alpha=0.8),
         )
 
-    # Initialize statistics
-    update_stats()
+    return update_stats
 
-    # Span selector for zooming to specific regions
+
+def _create_zoom_selector(
+    axes_dict, time_ms: np.ndarray, force_data: np.ndarray, update_stats
+):
+    """Create the zoom selection function."""
+
     def onselect(xmin, xmax):
+        ax_zoom = axes_dict["zoom"]
+        ax_main = axes_dict["main"]
+        line_zoom = axes_dict["line_zoom"]
+
         # Update zoom plot
         time_mask = (time_ms >= xmin) & (time_ms <= xmax)
         if np.any(time_mask):
@@ -1358,24 +1372,22 @@ Zoom Level: {(time_ms[-1] - time_ms[0]) / duration_view:.1f}x"""
             # Update statistics for zoomed region
             update_stats((xmin, xmax))
 
-            fig.canvas.draw()
+            axes_dict["fig"].canvas.draw()
 
-    # Create span selector (compatible with newer matplotlib versions)
-    try:
-        # Try new matplotlib API first
-        span = SpanSelector(
-            ax_main,
-            onselect,
-            direction="horizontal",
-            useblit=True,
-            props=dict(alpha=0.3, facecolor="red"),
-        )
-    except TypeError:
-        # Fall back to older matplotlib API
-        span = SpanSelector(ax_main, onselect, direction="horizontal", useblit=True)
+    return onselect
 
-    # Reset zoom function
+
+def _create_button_handlers(
+    axes_dict, time_ms: np.ndarray, force_data: np.ndarray, update_stats
+):
+    """Create button event handlers."""
+
     def reset_zoom(event):
+        ax_main = axes_dict["main"]
+        ax_zoom = axes_dict["zoom"]
+        original_xlim = axes_dict["original_xlim"]
+        original_ylim = axes_dict["original_ylim"]
+
         ax_main.set_xlim(original_xlim)
         ax_main.set_ylim(original_ylim)
         ax_zoom.clear()
@@ -1384,22 +1396,11 @@ Zoom Level: {(time_ms[-1] - time_ms[0]) / duration_view:.1f}x"""
         ax_zoom.set_title("Zoomed View (Select region in main plot)")
         ax_zoom.grid(True, alpha=0.3)
         (line_zoom,) = ax_zoom.plot([], [], "r-", linewidth=2, label="Zoomed Region")
+        axes_dict["line_zoom"] = line_zoom
         ax_zoom.legend()
         update_stats()
-        fig.canvas.draw()
+        axes_dict["fig"].canvas.draw()
 
-    # Add reset button in the bottom section
-    ax_button = fig.add_subplot(gs[3, 0])
-    ax_button.axis("off")
-    button_axes = plt.axes([0.1, 0.02, 0.15, 0.06])  # [left, bottom, width, height]
-    button = Button(button_axes, "Reset Zoom", color="lightcoral", hovercolor="red")
-    button.on_clicked(reset_zoom)
-
-    # Quick zoom buttons
-    ax_quick = fig.add_subplot(gs[3, 1])
-    ax_quick.axis("off")
-
-    # Add quick zoom to peak function
     def zoom_to_peak(event):
         peak_idx = np.argmax(np.abs(force_data))
         peak_time = time_ms[peak_idx]
@@ -1409,16 +1410,18 @@ Zoom Level: {(time_ms[-1] - time_ms[0]) / duration_view:.1f}x"""
         xmin = max(time_ms[0], peak_time - zoom_window)
         xmax = min(time_ms[-1], peak_time + zoom_window)
 
+        onselect = _create_zoom_selector(axes_dict, time_ms, force_data, update_stats)
         onselect(xmin, xmax)
 
-    peak_button_axes = plt.axes([0.3, 0.02, 0.15, 0.06])
-    peak_button = Button(
-        peak_button_axes, "Zoom to Peak", color="lightgreen", hovercolor="green"
-    )
-    peak_button.on_clicked(zoom_to_peak)
+    return reset_zoom, zoom_to_peak
 
-    # Mouse wheel zoom functionality
+
+def _create_scroll_handler(axes_dict, time_ms: np.ndarray, update_stats):
+    """Create mouse wheel scroll handler."""
+
     def on_scroll(event):
+        ax_main = axes_dict["main"]
+
         if event.inaxes != ax_main:
             return
 
@@ -1451,19 +1454,76 @@ Zoom Level: {(time_ms[-1] - time_ms[0]) / duration_view:.1f}x"""
         ax_main.set_xlim(new_xlim)
         ax_main.set_ylim(new_ylim)
         update_stats(new_xlim, new_ylim)
-        fig.canvas.draw()
+        axes_dict["fig"].canvas.draw()
+
+    return on_scroll
+
+
+def _setup_interactive_controls(
+    fig, axes_dict, time_ms: np.ndarray, force_data: np.ndarray
+):
+    """Set up all interactive controls and event handlers."""
+    # Store figure reference
+    axes_dict["fig"] = fig
+
+    # Create update function
+    update_stats = _create_stats_updater(axes_dict, time_ms, force_data)
+
+    # Initialize statistics
+    update_stats()
+
+    # Create zoom selector
+    onselect = _create_zoom_selector(axes_dict, time_ms, force_data, update_stats)
+
+    # Create span selector (try/except for matplotlib version compatibility)
+    try:
+        from matplotlib.widgets import SpanSelector
+
+        # Store span selector to prevent garbage collection
+        axes_dict["span_selector"] = SpanSelector(
+            axes_dict["main"],
+            onselect,
+            direction="horizontal",
+            useblit=True,
+            props=dict(alpha=0.3, facecolor="red"),
+        )
+    except TypeError:
+        # Fall back to older matplotlib API
+        axes_dict["span_selector"] = SpanSelector(
+            axes_dict["main"], onselect, direction="horizontal", useblit=True
+        )
+
+    # Create button handlers
+    reset_zoom, zoom_to_peak = _create_button_handlers(
+        axes_dict, time_ms, force_data, update_stats
+    )
+
+    # Add buttons
+    from matplotlib.widgets import Button
+
+    button_axes = plt.axes([0.1, 0.02, 0.15, 0.06])
+    button = Button(button_axes, "Reset Zoom", color="lightcoral", hovercolor="red")
+    button.on_clicked(reset_zoom)
+
+    peak_button_axes = plt.axes([0.3, 0.02, 0.15, 0.06])
+    peak_button = Button(
+        peak_button_axes, "Zoom to Peak", color="lightgreen", hovercolor="green"
+    )
+    peak_button.on_clicked(zoom_to_peak)
 
     # Connect scroll event
+    on_scroll = _create_scroll_handler(axes_dict, time_ms, update_stats)
     fig.canvas.mpl_connect("scroll_event", on_scroll)
 
+
+def _print_usage_instructions():
+    """Print usage instructions to console."""
     print("\n🎛️ INTERACTIVE CONTROLS:")
     print("• Mouse wheel: Zoom in/out")
     print("• Click + drag on main plot: Select region to zoom")
     print("• Reset Zoom button: Return to full view")
     print("• Zoom to Peak button: Quick zoom to maximum force")
     print("• Close window when done exploring")
-
-    plt.show(block=True)  # Block until window is closed
 
 
 # =============================================================================
@@ -1472,8 +1532,7 @@ Zoom Level: {(time_ms[-1] - time_ms[0]) / duration_view:.1f}x"""
 
 
 def create_summary_plots(results: List[Dict], output_dir: Union[str, Path]) -> None:
-    """
-    Legacy compatibility function - creates impulse-focused summary plots.
+    """Legacy compatibility function - creates impulse-focused summary plots.
 
     Note: This function now focuses on impulse analysis results rather than
     kinetic energy. For KE-specific plots, use legacy.visualization module.

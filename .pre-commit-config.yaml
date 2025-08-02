@@ -1,3 +1,4 @@
+exclude: ^src/.*/legacy/.*$
 repos:
   - repo: local
     hooks:

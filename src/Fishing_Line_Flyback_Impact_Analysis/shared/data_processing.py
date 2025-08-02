@@ -1,5 +1,4 @@
-"""
-Shared data processing functions for Fishing Line Flyback Impact Analysis
+"""Shared data processing functions for Fishing Line Flyback Impact Analysis.
 
 This module contains common data processing functions used by both impulse
 and legacy kinetic energy analysis methods.
@@ -7,7 +6,6 @@ and legacy kinetic energy analysis methods.
 
 from pathlib import Path
 from typing import List
-from typing import Optional
 from typing import Tuple
 from typing import Union
 
@@ -21,8 +19,7 @@ from .constants import LINE_MASS_FRACTION
 
 
 def load_csv_file(csv_path: Union[str, Path]) -> pd.DataFrame:
-    """
-    Load CSV file with error handling.
+    """Load CSV file with error handling.
 
     Args:
         csv_path: Path to CSV file
@@ -44,12 +41,11 @@ def load_csv_file(csv_path: Union[str, Path]) -> pd.DataFrame:
             raise pd.errors.EmptyDataError(f"CSV file is empty: {csv_path}")
         return df
     except Exception as e:
-        raise RuntimeError(f"Error reading CSV file {csv_path}: {e}")
+        raise RuntimeError(f"Error reading CSV file {csv_path}: {e}") from e
 
 
 def detect_force_columns(df: pd.DataFrame) -> List[str]:
-    """
-    Detect force columns in CSV data.
+    """Detect force columns in CSV data.
 
     Args:
         df: DataFrame with sensor data
@@ -70,8 +66,7 @@ def detect_force_columns(df: pd.DataFrame) -> List[str]:
 
 
 def convert_lbf_to_n(force_lbf: np.ndarray) -> np.ndarray:
-    """
-    Convert force from pounds-force to Newtons.
+    """Convert force from pounds-force to Newtons.
 
     Args:
         force_lbf: Force data in lbf
@@ -83,8 +78,7 @@ def convert_lbf_to_n(force_lbf: np.ndarray) -> np.ndarray:
 
 
 def apply_baseline_correction(force: np.ndarray) -> np.ndarray:
-    """
-    Apply baseline correction to force data.
+    """Apply baseline correction to force data.
 
     Args:
         force: Raw force data
@@ -102,8 +96,7 @@ def apply_baseline_correction(force: np.ndarray) -> np.ndarray:
 
 
 def calculate_total_force(df: pd.DataFrame) -> Tuple[np.ndarray, List[str]]:
-    """
-    Calculate total force from CSV data by summing all force columns.
+    """Calculate total force from CSV data by summing all force columns.
 
     Args:
         df: DataFrame with sensor data
@@ -130,8 +123,7 @@ def calculate_total_force(df: pd.DataFrame) -> Tuple[np.ndarray, List[str]]:
 def get_time_array(
     df: pd.DataFrame, force_length: int, sampling_rate: float = DEFAULT_SAMPLING_RATE
 ) -> Tuple[np.ndarray, float]:
-    """
-    Extract or generate time array from CSV data.
+    """Extract or generate time array from CSV data.
 
     Args:
         df: DataFrame with sensor data
@@ -173,8 +165,7 @@ def get_time_array(
 
 
 def extract_material_code(filename: str) -> str:
-    """
-    Extract material configuration code from filename.
+    """Extract material configuration code from filename.
 
     Args:
         filename: CSV filename
@@ -184,13 +175,12 @@ def extract_material_code(filename: str) -> str:
     """
     try:
         return Path(filename).stem.split("-")[0]
-    except:
+    except (IndexError, AttributeError):
         return "UNKNOWN"
 
 
 def extract_sample_number(filename: str) -> str:
-    """
-    Extract sample number from filename.
+    """Extract sample number from filename.
 
     Args:
         filename: CSV filename
@@ -201,7 +191,7 @@ def extract_sample_number(filename: str) -> str:
     try:
         parts = Path(filename).stem.split("-")
         return "-".join(parts[1:])
-    except:
+    except (IndexError, AttributeError):
         return "UNKNOWN"
 
 
@@ -210,8 +200,7 @@ def get_system_mass(
     include_line_mass: bool = True,
     line_mass_fraction: float = LINE_MASS_FRACTION,
 ) -> dict:
-    """
-    Calculate total system mass for given material configuration.
+    """Calculate total system mass for given material configuration.
 
     Args:
         material_code: Configuration code (e.g., 'STND', 'DF')

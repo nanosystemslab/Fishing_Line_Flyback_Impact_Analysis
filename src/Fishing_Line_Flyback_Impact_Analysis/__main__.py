@@ -1,5 +1,4 @@
-"""
-Fishing Line Flyback Impact Analysis - Impulse-Focused CLI v3.0
+"""Fishing Line Flyback Impact Analysis - Impulse-Focused CLI v3.0.
 
 Streamlined command-line interface focused on impulse analysis with
 optional access to legacy kinetic energy analysis tools.
@@ -9,7 +8,6 @@ from pathlib import Path
 
 import click
 import numpy as np
-import pandas as pd
 
 # Import core impulse analysis functions
 from .impulse_analysis import analyze_single_file_with_impulse
@@ -27,8 +25,7 @@ from .shared import MEASURED_LINE_MASS_GRAMS
 @click.group()
 @click.version_option(version="3.0.0")
 def main():
-    """
-    🎯 Fishing Line Flyback Impact Analysis v3.0 - Impulse-Focused
+    """🎯 Fishing Line Flyback Impact Analysis v3.0 - Impulse-Focused.
 
     This version focuses on impulse analysis (∫ F(t) dt) as the primary method
     for measuring fishing line impact effectiveness through momentum transfer.
@@ -68,8 +65,7 @@ def main():
     "--create-plots", is_flag=True, default=True, help="Create summary box plots"
 )
 def analyze_impulse(data_dir, output_dir, create_plots):
-    """
-    🎯 Run impulse analysis on all CSV files (PRIMARY COMMAND).
+    """🎯 Run impulse analysis on all CSV files (PRIMARY COMMAND).
 
     This is the main analysis command that processes all measurement files
     in the specified directory using the impulse method (∫ F(t) dt).
@@ -86,7 +82,7 @@ def analyze_impulse(data_dir, output_dir, create_plots):
     click.echo("=" * 70)
     click.echo(f"📁 Data directory: {data_dir}")
     click.echo(f"📊 Output directory: {output_dir}")
-    click.echo(f"🧮 Method: Total momentum transfer via ∫ F(t) dt")
+    click.echo("🧮 Method: Total momentum transfer via ∫ F(t) dt")
     click.echo()
 
     # Show configuration reference
@@ -97,7 +93,7 @@ def analyze_impulse(data_dir, output_dir, create_plots):
         material_name = MATERIAL_NAMES.get(config, config)
         click.echo(
             f"   {config}: {material_name:<12} "
-            f"({weight_kg*1000:2.0f}g + {line_mass_effective*1000:.0f}g = {total_mass*1000:.0f}g total)"
+            f"({weight_kg * 1000:2.0f}g + {line_mass_effective * 1000:.0f}g = {total_mass * 1000:.0f}g total)"  # noqa: B950
         )
     click.echo()
 
@@ -133,7 +129,7 @@ def analyze_impulse(data_dir, output_dir, create_plots):
 
     except Exception as e:
         click.echo(f"❌ Error during analysis: {e}")
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from e
 
 
 @main.command()
@@ -150,8 +146,7 @@ def analyze_impulse(data_dir, output_dir, create_plots):
 @click.option("--show-plot", is_flag=True, help="Show boundary validation plot")
 @click.option("--debug", is_flag=True, help="Show detailed debug information")
 def analyze_single(file_path, material, output, show_plot, debug):
-    """
-    🔍 Analyze a single measurement file using impulse method.
+    """🔍 Analyze a single measurement file using impulse method.
 
     This command analyzes one CSV file and optionally displays a validation
     plot showing the integration boundaries and force curve details.
@@ -211,7 +206,7 @@ def analyze_single(file_path, material, output, show_plot, debug):
             )
             click.echo(f"   Mass breakdown: {result.get('mass_breakdown', 'N/A')}")
             click.echo(
-                f"   Impact boundaries: {result['impact_start_idx']} to {result['impact_end_idx']}"
+                f"   Impact boundaries: {result['impact_start_idx']} to {result['impact_end_idx']}"  # noqa: B950
             )
             click.echo(
                 f"   Sampling rate: {result.get('sampling_rate_hz', 'Unknown'):.0f} Hz"
@@ -235,7 +230,7 @@ def analyze_single(file_path, material, output, show_plot, debug):
 
             click.echo("\n🔧 Full traceback:")
             click.echo(traceback.format_exc())
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from e
 
 
 @main.command()
@@ -259,8 +254,7 @@ def analyze_single(file_path, material, output, show_plot, debug):
     help="Interaction style: explorer (zoom/pan), simple (static)",
 )
 def plot_file(file_path, material, interactive, style):
-    """
-    📊 Plot force curve for visual inspection and exploration.
+    """📊 Plot force curve for visual inspection and exploration.
 
     This command creates an interactive plot of the force vs time data
     for visual inspection, allowing you to examine the force curve
@@ -301,7 +295,7 @@ def plot_file(file_path, material, interactive, style):
         if interactive and style == "explorer":
             click.echo(f"🎛️ Creating interactive plot (style: {style})...")
             click.echo(
-                "💡 Controls: Mouse wheel=zoom, Click+drag=select region, Reset button=restore"
+                "💡 Controls: Mouse wheel=zoom, Click+drag=select region, Reset button=restore"  # noqa: B950
             )
 
             from .visualization import show_force_preview_interactive
@@ -313,14 +307,14 @@ def plot_file(file_path, material, interactive, style):
             click.echo("🎨 Creating static plot...")
             from .visualization import show_force_preview
 
-            fig = show_force_preview(force_data, time_data, file_path.name)
+            show_force_preview(force_data, time_data, file_path.name)
             click.echo("📊 Static plot displayed")
 
         click.echo("✅ Plot complete")
 
     except Exception as e:
         click.echo(f"❌ Error creating plot: {e}")
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from e
 
 
 @main.command()
@@ -339,8 +333,7 @@ def plot_file(file_path, material, interactive, style):
     help="Interaction style",
 )
 def interactive_plot(file_path, material, show_analysis, style):
-    """
-    🎛️ Interactive force curve exploration with zoom and analysis preview.
+    """🎛️ Interactive force curve exploration with zoom and analysis preview.
 
     This command creates a fully interactive plot with:
 
@@ -377,7 +370,9 @@ def interactive_plot(file_path, material, show_analysis, style):
 
         # Show data info
         click.echo(f"📈 Data loaded: {len(force_data):,} points")
-        click.echo(f"⏱️  Duration: {time_data[-1]:.4f}s ({time_data[-1]*1000:.1f} ms)")
+        click.echo(
+            f"⏱️  Duration: {time_data[-1]:.4f}s ({time_data[-1] * 1000:.1f} ms)"
+        )  # noqa: B950
         click.echo(
             f"🔍 Force range: {np.min(force_data):.1f} to {np.max(force_data):.1f} N"
         )
@@ -412,7 +407,7 @@ def interactive_plot(file_path, material, show_analysis, style):
 
     except Exception as e:
         click.echo(f"❌ Error creating interactive plot: {e}")
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from e
 
 
 # =============================================================================
@@ -425,8 +420,7 @@ def interactive_plot(file_path, material, show_analysis, style):
     "--file", "-f", type=click.Path(exists=True), help="CSV file to load on startup"
 )
 def gui(file):
-    """
-    🖥️  Launch interactive PyQt dashboard for data exploration.
+    """🖥️  Launch interactive PyQt dashboard for data exploration.
 
     The GUI provides:
     • High-performance interactive plotting (handles 3M+ points smoothly)
@@ -448,7 +442,6 @@ def gui(file):
 
     try:
         from .gui import PYQT_AVAILABLE
-        from .gui import launch_gui
 
         if not PYQT_AVAILABLE:
             click.echo("❌ PyQt5 and pyqtgraph are required for GUI mode")
@@ -489,10 +482,10 @@ def gui(file):
         click.echo(f"❌ Import error: {e}")
         click.echo("💡 Install PyQt dependencies:")
         click.echo("   poetry add PyQt5 pyqtgraph")
-        raise click.ClickException("GUI dependencies not available")
+        raise click.ClickException("GUI dependencies not available") from e
     except Exception as e:
         click.echo(f"❌ Error launching GUI: {e}")
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from e
 
 
 # =============================================================================
@@ -504,8 +497,7 @@ def gui(file):
 @click.argument("data_dir", type=click.Path(exists=True))
 @click.option("--count", "-n", default=5, help="Number of files to check")
 def quick_check(data_dir, count):
-    """
-    ⚡ Quick impulse check of multiple files (first N files).
+    """⚡ Quick impulse check of multiple files (first N files).
 
     Provides a rapid overview of impulse analysis results for the first
     few files in a directory. Useful for quick validation or debugging.
@@ -533,7 +525,8 @@ def quick_check(data_dir, count):
 
                 direction = "Forward →" if impulse > 0 else "Backward ←"
                 click.echo(
-                    f"{file_path.name:<18} {material:<4} {impulse:>+12.6f} N*s  {direction:<10} {peak_force:>6.0f} N"
+                    f"{file_path.name:<18} {material:<4} {impulse:>+12.6f} N*s"
+                    f"{direction:<10} {peak_force:>6.0f} N"
                 )
                 success_count += 1
             else:
@@ -550,8 +543,7 @@ def quick_check(data_dir, count):
 
 @main.command()
 def info():
-    """
-    ℹ️  Show package information and usage examples.
+    """ℹ️  Show package information and usage examples.
 
     Displays configuration details, usage examples, and scientific background
     for the impulse analysis method.
@@ -570,39 +562,42 @@ def info():
 
     click.echo("⚖️  MEASURED PARAMETERS:")
     click.echo(
-        f'   Line length: {MEASURED_LINE_LENGTH_INCHES}" ({MEASURED_LINE_MASS_GRAMS}g measured)'
+        f'Line length: {MEASURED_LINE_LENGTH_INCHES}"'
+        f"({MEASURED_LINE_MASS_GRAMS}g measured)"
     )
     click.echo(
-        f"   Effective line mass: {LINE_MASS_FRACTION*100:.0f}% (literature validated)"
+        f"   Effective line mass: {LINE_MASS_FRACTION * 100:.0f}% (literature validated)"  # noqa: B950
     )
-    click.echo(f"   Total line mass: 38.8g → {LINE_MASS_FRACTION*38.8:.0f}g effective")
+    click.echo(
+        f"   Total line mass: 38.8g → {LINE_MASS_FRACTION * 38.8:.0f}g effective"
+    )  # noqa: B950
     click.echo()
 
     click.echo("🏗️  HARDWARE CONFIGURATIONS:")
     for config, weight_kg in sorted(CONFIG_WEIGHTS.items()):
         material_name = MATERIAL_NAMES.get(config, config)
-        click.echo(f"   {config}: {material_name:<12} {weight_kg*1000:.0f}g hardware")
+        click.echo(f"   {config}: {material_name:<12} {weight_kg * 1000:.0f}g hardware")
     click.echo()
 
     click.echo("🚀 USAGE EXAMPLES:")
     click.echo("   # Analyze all files in directory:")
     click.echo(
-        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data/csv"
+        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data/csv"  # noqa: B950
     )
     click.echo()
     click.echo("   # Analyze single file with validation plot:")
     click.echo(
-        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single file.csv --show-plot"
+        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single file.csv --show-plot"  # noqa: B950
     )
     click.echo()
     click.echo("   # Quick check of first 5 files:")
     click.echo(
-        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check data/csv -n 5"
+        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check data/csv -n 5"  # noqa: B950
     )
     click.echo()
     click.echo("   # Interactive force curve exploration:")
     click.echo(
-        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis interactive-plot data/csv/STND-21-5.csv"
+        "   poetry run python -m Fishing_Line_Flyback_Impact_Analysis interactive-plot data/csv/STND-21-5.csv"  # noqa: B950
     )
     click.echo()
 
@@ -620,8 +615,7 @@ def info():
 
 @main.group()
 def legacy():
-    """
-    🗂️ Access legacy kinetic energy analysis and windowing tools.
+    """🗂️ Access legacy kinetic energy analysis and windowing tools.
 
     These commands provide access to the original kinetic energy analysis
     methods and interactive windowing tools. Use for comparison studies
@@ -641,6 +635,7 @@ def ke_analysis(data_dir, output_dir):
 
         click.echo(f"📊 Running KE analysis on: {data_dir}")
         results = run_comprehensive_analysis(data_dir, output_dir)
+        print(results)
         click.echo(f"✅ Legacy KE analysis complete: {output_dir}")
     except ImportError:
         click.echo("❌ Legacy KE analysis module not available")

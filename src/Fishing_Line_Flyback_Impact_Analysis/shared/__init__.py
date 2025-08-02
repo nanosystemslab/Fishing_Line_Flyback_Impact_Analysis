@@ -1,5 +1,4 @@
-"""
-Shared components for Fishing Line Flyback Impact Analysis
+"""Shared components for Fishing Line Flyback Impact Analysis.
 
 This package contains constants, data processing functions, and utilities
 shared between impulse analysis and legacy kinetic energy analysis.

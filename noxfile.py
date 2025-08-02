@@ -149,7 +149,7 @@ def safety(session: Session) -> None:
     session.install(".")
     session.install("safety")
     # Ignore pip vulnerability 75180 - it's a build tool vulnerability, not runtime
-    session.run("safety", "check", "--ignore", "75180")
+    session.run("safety", "scan", "--ignore", "75180")
 
 
 @session(python=python_versions)

@@ -29,7 +29,7 @@ def load_csv_file(csv_path: Union[str, Path]) -> pd.DataFrame:
 
     Raises:
         FileNotFoundError: If CSV file doesn't exist
-        pd.errors.EmptyDataError: If CSV file is empty
+        RuntimeError: If CSV file cannot be read
     """
     csv_path = Path(csv_path)
     if not csv_path.exists():
@@ -38,7 +38,7 @@ def load_csv_file(csv_path: Union[str, Path]) -> pd.DataFrame:
     try:
         df = pd.read_csv(csv_path)
         if df.empty:
-            raise pd.errors.EmptyDataError(f"CSV file is empty: {csv_path}")
+            raise RuntimeError(f"CSV file is empty: {csv_path}")
         return df
     except Exception as e:
         raise RuntimeError(f"Error reading CSV file {csv_path}: {e}") from e
@@ -103,6 +103,9 @@ def calculate_total_force(df: pd.DataFrame) -> Tuple[np.ndarray, List[str]]:
 
     Returns:
         Tuple of (total_force_in_N, force_column_names)
+
+    Raises:
+        ValueError: If no force columns are detected in CSV file
     """
     force_columns = detect_force_columns(df)
 

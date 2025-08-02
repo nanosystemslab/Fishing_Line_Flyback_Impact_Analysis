@@ -419,32 +419,32 @@ def interactive_plot(file_path, material, show_analysis, style):
 @click.option(
     "--file", "-f", type=click.Path(exists=True), help="CSV file to load on startup"
 )
-def gui(file):
-    """🖥️  Launch interactive PyQt dashboard for data exploration.
+def boundary_viewer(file):
+    """🔍 Launch integration boundary viewer for visual verification.
 
-    The GUI provides:
-    • High-performance interactive plotting (handles 3M+ points smoothly)
-    • Real-time zoom, pan, and crosshair cursor
-    • Material selection and analysis controls
-    • Live statistics and analysis results
-    • Export capabilities for plots and analysis data
-    • Much better user experience than matplotlib widgets
+    A lightweight GUI specifically designed for visual verification of
+    impulse analysis integration boundaries. Shows force curves with
+    highlighted start/end points for human inspection.
 
-    Controls:
-    • Mouse wheel: Zoom in/out
-    • Mouse drag: Pan around
-    • Right-click: Context menu with zoom options
-    • Crosshair follows mouse for precise readings
+    Features:
+    • Fast loading and plotting
+    • Shows integration boundaries from impulse analysis
+    • Interactive zoom and pan
+    • Material auto-detection
+    • No complex analysis - just boundary visualization
+
+    Purpose: Verify that integration regions make sense visually
+    before running full analysis pipelines.
 
     FILE: Optional CSV file to load on startup
     """
-    click.echo("🖥️  Launching Interactive PyQt Dashboard...")
+    click.echo("🔍 Launching Integration Boundary Viewer...")
 
     try:
         from .gui import PYQT_AVAILABLE
 
         if not PYQT_AVAILABLE:
-            click.echo("❌ PyQt5 and pyqtgraph are required for GUI mode")
+            click.echo("❌ PyQt5 and pyqtgraph are required for boundary viewer")
             click.echo("💡 Install with: poetry add PyQt5 pyqtgraph")
             raise click.ClickException("Missing GUI dependencies")
 
@@ -453,30 +453,17 @@ def gui(file):
         if file:
             click.echo(f"📁 Will load: {file}")
 
-        click.echo("🚀 Starting GUI application...")
+        click.echo("🚀 Starting boundary viewer...")
 
-        # Import and launch GUI
-        import sys
+        from .gui import launch_boundary_viewer
 
-        from PyQt5 import QtWidgets
+        # Launch the boundary viewer
+        exit_code = launch_boundary_viewer()
 
-        from .gui.main_window import FishingLineAnalyzerGUI
-
-        app = QtWidgets.QApplication(sys.argv)
-        app.setApplicationName("Fishing Line Impact Analyzer v3.0")
-        app.setOrganizationName("Nanosystems Lab")
-        app.setStyle("Fusion")  # Modern look
-
-        window = FishingLineAnalyzerGUI()
-
-        # Load file if specified
-        if file:
-            window.load_file(str(file))
-
-        window.show()
-
-        # This will block until GUI is closed
-        sys.exit(app.exec_())
+        if exit_code == 0:
+            click.echo("✅ Boundary viewer closed successfully")
+        else:
+            click.echo(f"⚠️  Boundary viewer exited with code: {exit_code}")
 
     except ImportError as e:
         click.echo(f"❌ Import error: {e}")
@@ -484,7 +471,7 @@ def gui(file):
         click.echo("   poetry add PyQt5 pyqtgraph")
         raise click.ClickException("GUI dependencies not available") from e
     except Exception as e:
-        click.echo(f"❌ Error launching GUI: {e}")
+        click.echo(f"❌ Error launching boundary viewer: {e}")
         raise click.ClickException(str(e)) from e
 
 

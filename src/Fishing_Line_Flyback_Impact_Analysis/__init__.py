@@ -1,4 +1,4 @@
-"""Fishing Line Flyback Impact Analysis Package v3.0.
+"""Fishing Line Flyback Impact Analysis Package v1.0.
 
 IMPULSE-FOCUSED VERSION: Streamlined for momentum transfer analysis.
 
@@ -11,10 +11,10 @@ Core Features:
 ✓ Direct momentum transfer measurement
 ✓ Force curve visualization with boundary validation
 ✓ Configuration-specific hardware weights
-✓ Measured line mass integration (70% effective)
 ✓ Material comparison and statistical reporting
 ✓ Publication-quality visualizations
 ✓ Shared data processing components
+✓ Lightweight boundary viewer GUI for visual verification
 
 Legacy Features (available via .legacy module):
 ✓ Kinetic energy analysis methods
@@ -22,8 +22,6 @@ Legacy Features (available via .legacy module):
 ✓ Method comparison utilities
 
 Scientific Basis:
-- Hardware masses: Measured for each configuration (STND=45g, DF=60g, etc.)
-- Line mass: 5.5" = 0.542g measured → 38.8g total → 27g effective (70%)
 - Analysis method: Direct impulse integration ∫ F(t) dt
 - Focus: What the fish/lure actually experiences (momentum transfer)
 
@@ -33,6 +31,11 @@ Quick Start:
 
 CLI Usage:
 $ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data/csv
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis boundary-viewer
+
+GUI Usage:
+>>> from Fishing_Line_Flyback_Impact_Analysis import launch_boundary_viewer
+>>> launch_boundary_viewer()  # Visual verification of integration boundaries
 """
 
 # Core impulse analysis (primary interface)
@@ -58,16 +61,16 @@ from .visualization import plot_single_file_analysis
 from .visualization import show_force_preview
 
 
-# Import GUI components (with fallback for missing dependencies)
+# Import lightweight GUI components (boundary viewer only)
 try:
-    from .gui import FishingLineAnalyzerGUI
-    from .gui_launcher import launch_gui
+    from .gui import IntegrationBoundaryViewer
+    from .gui import launch_boundary_viewer
 
     _GUI_AVAILABLE = True
 except ImportError:
     _GUI_AVAILABLE = False
-    FishingLineAnalyzerGUI = None
-    launch_gui = None
+    IntegrationBoundaryViewer = None
+    launch_boundary_viewer = None
 
 # Package metadata
 __version__ = "1.0.0"  # Major version bump - impulse-focused architecture
@@ -99,10 +102,14 @@ __all__ = [
     # Package info
     "__version__",
     "__author__",
-    "__description__"
-    # GUI components (if available)
-    "FishingLineAnalyzerGUI",
-    "launch_gui",
+    "__description__",
+    # Lightweight GUI components (boundary viewer)
+    "IntegrationBoundaryViewer",
+    "launch_boundary_viewer",
+    # Convenience functions
+    "quick_analysis",
+    "batch_analysis",
+    "get_configuration_info",
 ]
 
 # Set up plotting style for the package
@@ -198,5 +205,74 @@ def get_configuration_info():
     }
 
 
-# Add convenience functions to __all__
-__all__.extend(["quick_analysis", "batch_analysis", "get_configuration_info"])
+def quick_boundary_check(file_path):
+    """Quick visual boundary check for a single file.
+
+    Opens the boundary viewer GUI with the specified file loaded.
+    Useful for rapid visual verification of integration boundaries.
+
+    Args:
+        file_path: Path to CSV file to check
+
+    Example:
+        >>> quick_boundary_check('data/STND-21-5.csv')
+    """
+    if not _GUI_AVAILABLE:
+        print("❌ PyQt5 and pyqtgraph are required for boundary viewer")
+        print("💡 Install with: poetry add PyQt5 pyqtgraph")
+        return
+
+    import sys
+
+    from PyQt5 import QtWidgets
+
+    # Create application if none exists
+    app = QtWidgets.QApplication.instance()
+    if app is None:
+        app = QtWidgets.QApplication(sys.argv)
+
+    # Create and show boundary viewer
+    viewer = IntegrationBoundaryViewer()
+    viewer.show()
+
+    # Load the specified file
+    try:
+        viewer.load_file_directly(file_path)  # We'll need to add this method
+    except AttributeError:
+        print(f"Please manually load: {file_path}")
+
+    # Start event loop if not already running
+    if not app.exec_():
+        app.exec_()
+
+
+def gui_info():
+    """Get information about available GUI components.
+
+    Returns:
+        Dictionary with GUI availability and features
+    """
+    gui_info = {
+        "gui_available": _GUI_AVAILABLE,
+        "components": {},
+        "requirements": ["PyQt5", "pyqtgraph"],
+        "features": [
+            "Visual verification of integration boundaries",
+            "Interactive force curve plotting",
+            "Real-time zoom and pan",
+            "Material auto-detection",
+            "Fast loading for quick verification",
+        ],
+    }
+
+    if _GUI_AVAILABLE:
+        gui_info["components"]["boundary_viewer"] = {
+            "class": "IntegrationBoundaryViewer",
+            "launcher": "launch_boundary_viewer",
+            "purpose": "Visual verification of impulse analysis integration boundaries",
+            "cli_command": "boundary-viewer",
+        }
+    else:
+        gui_info["install_command"] = "poetry add PyQt5 pyqtgraph"
+
+    return gui_info

@@ -6,59 +6,60 @@
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)][license]
 
-**A comprehensive Python package for analyzing fishing line flyback impact data from Dewesoft sensor measurements.**
+**A comprehensive Python package for analyzing fishing line flyback impact data using impulse-based analysis (∫F(t)dt) to measure momentum transfer effectiveness.**
 
-This package provides tools for processing multi-sensor force data, calculating impact properties (impulse, energy, velocity), and generating publication-ready statistical comparisons across different fishing gear configurations.
+This package provides streamlined tools for processing multi-sensor force data and quantifying fishing line impact properties through direct momentum transfer measurement, which is more relevant to fishing line performance than energy-based methods.
 
 ## Overview
 
-When fishing lines snap under tension, the rapid flyback creates significant impact forces that can cause injury. This package analyzes sensor data from controlled flyback tests to quantify impact properties and compare the effectiveness of different weight configurations in reducing impact energy.
+When fishing lines snap under tension, the rapid flyback creates significant impact forces that can cause injury. This package analyzes sensor data from controlled flyback tests to quantify momentum transfer and compare the effectiveness of different weight configurations in reducing impact forces.
 
-### Key Capabilities
+### Key Scientific Approach
 
-- **Multi-sensor data processing** from Dewesoft CSV files
-- **Automated peak detection** and signal trimming around impact events
-- **Impact property calculations** including impulse, force, velocity, and kinetic energy
-- **Statistical analysis** across different gear configurations
-- **Publication-ready visualizations** including box plots, violin plots, and time series
-- **Summary tables** with automatic unit conversions and percentage comparisons
+**Primary Method: Impulse Analysis (v3.0)**
+
+- **Direct momentum transfer measurement** via ∫F(t)dt integration
+- **More relevant to fishing line performance** than kinetic energy estimation
+- **Simple and robust** - integrates complete force curve without assumptions
+- **What the fish/lure actually experiences** during impact
+
+**Legacy Methods (available via `legacy` module)**
+
+- Kinetic energy analysis using peak-focused deceleration phase
+- Interactive windowing tools for manual impact region selection
+- Method comparison utilities for research validation
 
 ## Features
 
-### 🔍 **Data Analysis**
+### 🎯 **Primary Impulse Analysis**
 
-- Load and process Dewesoft CSV files with multiple force sensors
-- Automatic peak detection and data trimming around impact events
-- Calculate impact properties: maximum force, impulse, velocity, kinetic energy
-- Handle different test configurations (Standard, Dual Fixed, Dual Sliding, Sliding, Breakaway)
+- **Direct momentum transfer measurement** using ∫F(t)dt
+- **Configuration-specific masses** (STND=45g, DF=60g, DS=72g, SL=69g, BR=45g)
+- **Measured line mass integration** (70% effective from 38.8g total)
+- **Automatic impact boundary detection** with validation plots
+- **Publication-quality visualizations** and statistical summaries
 
-### 📊 **Visualization**
+### 🔍 **Data Processing**
 
-- Time series plots of sensor data with property annotations
-- Statistical comparison plots (box plots, violin plots)
-- Multi-sensor overlay plots
-- Dual-parameter comparison plots with publication-quality formatting
+- **Shared data processing components** for consistent analysis
+- **Multi-sensor CSV support** from Dewesoft measurements
+- **Automatic force summation** with baseline correction
+- **Smart peak detection** for efficient large dataset handling
 
-### 📈 **Statistical Analysis**
+### 📊 **Visualization & Analysis**
 
-- Automated summary statistics by configuration type
-- Percentage comparisons relative to standard configuration
-- Impact energy calculations assuming inelastic collision
-- Human-readable summary tables printed to terminal
+- **Interactive force curve exploration** with zoom and pan
+- **Boundary validation plots** showing integration regions
+- **Material comparison box plots** with statistical significance
+- **Real-time analysis in PyQt GUI** for data exploration
+- **Cumulative impulse visualization** for understanding momentum buildup
 
-### ⚡ **Performance**
+### ⚡ **Performance & Usability**
 
-- Automatic H5 file caching for faster reprocessing
-- Batch processing capabilities for large datasets
-- Configurable output directories and file formats
-
-### 🖥️ **Command-Line Interface**
-
-- `analyze` - Process individual or multiple sensor files
-- `postprocess` - Generate statistical plots from results
-- `batch` - Process entire directories of data files
-- `table` - Generate formatted summary tables
-- `visualize` - Create plots from output data
+- **Tabbed GUI interface** for comprehensive data exploration
+- **CLI with progressive complexity** from simple to research-grade analysis
+- **Batch processing** for large datasets
+- **Export capabilities** for plots, data, and analysis results
 
 ## Requirements
 
@@ -66,9 +67,10 @@ When fishing lines snap under tension, the rapid flyback creates significant imp
 - **Core Dependencies**:
   - `pandas` ≥2.3.0 - Data manipulation and analysis
   - `numpy` ≥2.3.1 - Numerical computing
-  - `scipy` ≥1.16.0 - Signal processing and integration
   - `matplotlib` ≥3.10.3 - Plotting and visualization
   - `seaborn` ≥0.13.2 - Statistical visualization
+- **Optional GUI Dependencies**:
+  - `PyQt5` - Interactive dashboard (install with: `poetry add PyQt5 pyqtgraph`)
 
 ## Installation
 
@@ -82,176 +84,339 @@ $ cd Fishing_Line_Flyback_Impact_Analysis
 $ poetry install
 ```
 
+### With GUI Support
+
+For the interactive PyQt dashboard:
+
+```console
+$ poetry install
+$ poetry add PyQt5 pyqtgraph
+```
+
 ### Development Installation
 
 For development with all dev dependencies:
 
 ```console
-$ git clone https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis.git
-$ cd Fishing_Line_Flyback_Impact_Analysis
 $ poetry install --with dev
 ```
 
 ## Quick Start
 
-### 1. Analyze Single File
+### 1. Primary Impulse Analysis
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze -i data/STND-21-1.csv
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data/csv
 ```
 
-**Output:** `STND-21-1.csv,J=2.450,F=1250.32`
+**Output:**
 
-### 2. Compare Multiple Configurations
+```
+🎯 IMPULSE-BASED FISHING LINE ANALYSIS v3.0
+============================================================
+📁 Data directory: data/csv
+📊 Output directory: impulse_analysis
+🧮 Method: Total momentum transfer via ∫ F(t) dt
+
+⚖️  CONFIGURATION REFERENCE:
+   STND: Standard      ( 45g + 27g =  72g total)
+   DF: Dual Fixed      ( 60g + 27g =  87g total)
+   DS: Dual Sliding    ( 72g + 27g =  99g total)
+   SL: Sliding         ( 69g + 27g =  96g total)
+   BR: Breakaway       ( 45g + 27g =  72g total)
+
+✅ Successfully analyzed: 47/47 files
+📊 Impulse range: -0.002956 to +0.003621 N*s
+📁 All results saved to: impulse_analysis
+```
+
+### 2. Single File Analysis with Validation
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze -i data/STND-21-*.csv data/DF-21-*.csv data/BR-21-*.csv
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis table -i out/run_results.txt
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single data/csv/STND-21-5.csv --show-plot
 ```
 
-**Terminal Output:**
+**Output:**
 
 ```
-====================================================================================================
-FLYBACK IMPACT ANALYSIS - SUMMARY TABLE
-====================================================================================================
-Configuration    Runs  Impulse      STD      % vs     Max Force    STD      Impact Energy  % vs
-                       [kN·s]               STND     [kN]                  [MJ]           STND
-----------------------------------------------------------------------------------------------------
-Standard (SD)    10    8.03         2.71     +0%      85.83        13.17    717            +0%
-Dual Fixed (DF)  9     2.86         1.13     -64%     68.30        12.37    66             -91%
-Breakaway (BR)   10    0.69         0.30     -91%     48.94        12.33    5              -99%
-----------------------------------------------------------------------------------------------------
-
-KEY FINDINGS:
-• Breakaway reduces impact energy by 99% vs Standard
-• Dual Fixed (DF) shows best compromise (91% energy reduction)
-====================================================================================================
+🔍 Single File Impulse Analysis: STND-21-5.csv
+--------------------------------------------------
+📊 IMPULSE ANALYSIS RESULTS:
+   Total impulse: +0.002874 N*s
+   Absolute impulse: 0.002874 N*s
+   Peak force: 1247 N
+   Impact duration: 3.2 ms
+   Equivalent velocity: 40 m/s
+   Equivalent KE: 0.000058 J
 ```
 
-### 3. Generate Statistical Plots
+### 3. Interactive GUI Dashboard
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis postprocess -i out/run_results.txt
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis gui
 ```
 
-### 4. Batch Process Directory
+**Features:**
+
+- 📁 **File & Data tab**: Load CSV files, view data statistics, smart peak detection
+- 🔬 **Analysis tab**: Run impulse analysis, view boundary validation
+- 📊 **Results tab**: Detailed results with export capabilities
+- ⚙️ **Settings tab**: Export options and application information
+
+### 4. Quick Dataset Overview
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis batch -d data/csv --summary
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check data/csv -n 5
+```
+
+**Output:**
+
+```
+⚡ QUICK IMPULSE CHECK (5 files)
+-----------------------------------------------------------------
+File               Mat  Total Impulse    Direction  Peak Force
+-----------------------------------------------------------------
+STND-21-1.csv      STND +0.002874 N*s   Forward →   1247 N
+DF-21-1.csv        DF   +0.001256 N*s   Forward →    892 N
+BR-21-1.csv        BR   +0.000123 N*s   Forward →    234 N
 ```
 
 ## Data Format
 
-The package expects CSV files from Dewesoft with the following columns:
+The package expects CSV files from Dewesoft with force sensor columns:
 
-- `Time (s)` - Time stamps
-- `AI 1/AI 1 (lbf)` to `AI 4/AI 4 (lbf)` - Force sensor readings
-- Optional: `Video/Camera 0 ()` (automatically removed)
+- **Force columns**: `AI 1/AI 1 (lbf)` through `AI 4/AI 4 (lbf)` (automatically detected)
+- **Time column**: `Time (s)` or automatically generated from sampling rate
+- **File naming**: `CONFIG-DIAMETER-FILENUM.csv` (e.g., `STND-21-5.csv`)
 
-**File Naming Convention**: `CONFIG-DIAMETER-FILENUM.csv`
+**Supported Configurations:**
 
-- `CONFIG`: Test configuration (STND, DF, DS, SL, BR)
-- `DIAMETER`: Line diameter (e.g., 21)
-- `FILENUM`: Test run number
-
-**Example**: `STND-21-1.csv`, `DF-21-5.csv`, `BR-21-10.csv`
-
-## Output Files
-
-### Generated Plots
-
-- **Time series**: `plot-time_vs_SUM--CONFIG-DIAM-RUN.png`
-- **Box plots**: `plot-box-F.png`, `plot-box-J.png`
-- **Violin plots**: `plot-violin-F.png`, `plot-violin-J.png`
-- **Dual plots**: `plot-box-J-F.png`, `plot-box-J-F.svg`
-
-### Data Files
-
-- **Results**: `run_results.txt` - Raw analysis results
-- **Statistics**: `results.csv` - Summary statistics by configuration
-- **Cache**: `data/h5/*.h5` - Processed data for faster reloading
-- **Reports**: `summary_report.txt`, `flyback_summary_table.txt`
+- `STND`: Standard (45g hardware)
+- `DF`: Dual Fixed (60g hardware)
+- `DS`: Dual Sliding (72g hardware)
+- `SL`: Sliding (69g hardware)
+- `BR`: Breakaway (45g hardware)
 
 ## Command Reference
 
-### `analyze` - Process Sensor Data
+### Primary Impulse Analysis Commands
+
+#### `analyze-impulse` - Main Analysis Command
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze [OPTIONS]
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse [DATA_DIR]
+
+Arguments:
+  DATA_DIR              Directory containing CSV files
 
 Options:
-  -i, --input PATH           Input CSV file(s) [required]
-  -o, --output PATH          Output directory [default: out]
-  --param-y CHOICE           Y-axis parameter [default: SUM]
-  --param-x CHOICE           X-axis parameter [default: time]
-  --show-all-sensors         Plot all individual sensors
+  --output-dir, -o      Output directory [default: impulse_analysis]
+  --create-plots        Create summary box plots [default: True]
 ```
 
-### `postprocess` - Generate Statistical Analysis
+#### `analyze-single` - Single File Analysis
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis postprocess [OPTIONS]
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single [FILE_PATH]
 
 Options:
-  -i, --input PATH           Results text file [required]
-  -o, --output PATH          Output directory [default: out]
-  --plot-type CHOICE         Plot type: box|violin|dual|all [default: all]
-  --generate-table           Also generate summary table
+  --material, -m        Material code (auto-detected if not specified)
+  --output, -o          Output file for results
+  --show-plot          Show boundary validation plot
+  --debug              Show detailed debug information
 ```
 
-### `batch` - Process Multiple Files
+#### `gui` - Interactive Dashboard
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis batch [OPTIONS]
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis gui
 
 Options:
-  -d, --data-dir PATH        Data directory [required]
-  -o, --output PATH          Output directory [default: out]
-  --summary                  Generate summary statistics
+  --file, -f           CSV file to load on startup
 ```
 
-### `table` - Generate Summary Table
+### Utility Commands
+
+#### `quick-check` - Fast Dataset Overview
 
 ```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis table [OPTIONS]
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check [DATA_DIR]
 
 Options:
-  -i, --input PATH           Results text file [required]
-  -o, --output PATH          Output directory [default: out]
+  --count, -n          Number of files to check [default: 5]
 ```
+
+#### `plot-file` - Force Curve Visualization
+
+```console
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis plot-file [FILE_PATH]
+
+Options:
+  --interactive        Use interactive plotting [default: True]
+  --style              Interaction style: explorer, simple [default: explorer]
+```
+
+#### `interactive-plot` - Advanced Force Exploration
+
+```console
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis interactive-plot [FILE_PATH]
+
+Options:
+  --show-analysis      Show analysis boundaries overlay
+  --style              Interaction style [default: explorer]
+```
+
+### Legacy Analysis Access
+
+#### `legacy ke-analysis` - Kinetic Energy Method
+
+```console
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis legacy ke-analysis [DATA_DIR]
+
+Options:
+  --output-dir, -o     Output directory [default: ke_analysis]
+```
+
+#### `legacy window-tool` - Interactive Windowing
+
+```console
+$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis legacy window-tool [FILE_PATH]
+```
+
+## Output Files
+
+### Impulse Analysis Results
+
+#### Generated Files
+
+- **`impulse_analysis_results.csv`** - Detailed analysis results for all files
+- **`impulse_analysis_full_results.json`** - Complete results including errors
+- **`impulse_boxplots_SI.png/.svg`** - Publication-quality box plots (SI units)
+- **`impulse_boxplots_mixed.png/.svg`** - Mixed units (N\*s, kN force)
+
+#### Result Columns
+
+- `total_impulse` - Total momentum transfer (N\*s)
+- `total_abs_impulse` - Absolute impulse magnitude (N\*s)
+- `impact_impulse` - Impact region impulse (N\*s)
+- `peak_force` - Maximum force (N)
+- `impact_duration` - Impact duration (s)
+- `equivalent_velocity` - Equivalent velocity (m/s)
+- `equivalent_kinetic_energy` - Equivalent KE (J)
+
+### Interactive Exports
+
+- **Plot exports**: PNG, SVG formats for publication
+- **Data exports**: Processed CSV with time, force, cumulative impulse
+- **Analysis exports**: JSON and text formats for results
+
+## Scientific Background
+
+### Impulse vs. Kinetic Energy Analysis
+
+**Why Impulse Analysis is Primary:**
+
+1. **Direct measurement** of what the fish/lure experiences
+2. **No assumptions** about energy conversion efficiency
+3. **Complete force curve integration** captures all momentum transfer
+4. **More relevant** to fishing line performance evaluation
+5. **Simpler and more robust** than peak-focused methods
+
+**When to use Kinetic Energy Analysis (Legacy):**
+
+- Projectile energy characterization
+- Comparison with ballistic calculations
+- Research validation and method comparison
+- Initial velocity estimation
+
+### Mass Calculations
+
+**Hardware Masses (Measured):**
+
+- Standard: 45g, Dual Fixed: 60g, Dual Sliding: 72g
+- Sliding: 69g, Breakaway: 45g
+
+**Line Mass:**
+
+- Measured: 5.5" section = 0.542g
+- Total line: 38.8g (scaled from measurement)
+- Effective: 27g (70% of total, literature validated)
+
+**Total System Mass:** Hardware + Effective Line Mass
 
 ## Example Workflows
 
-### Complete Analysis Pipeline
+### Complete Research Analysis
 
 ```bash
-# 1. Analyze all test files
-poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze -i data/*.csv
+# 1. Comprehensive impulse analysis
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data/csv
 
-# 2. Generate comprehensive plots and statistics
-poetry run python -m Fishing_Line_Flyback_Impact_Analysis postprocess -i out/run_results.txt --generate-table
+# 2. Interactive data exploration
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis gui
 
-# 3. Create publication-ready summary
-poetry run python -m Fishing_Line_Flyback_Impact_Analysis table -i out/run_results.txt
+# 3. Method comparison (impulse vs legacy KE)
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis legacy ke-analysis data/csv
+
+# 4. Statistical validation
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check data/csv -n 20
 ```
 
-### Configuration Comparison Study
+### Publication-Ready Analysis
 
 ```bash
-# Compare specific configurations
-poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze -i data/STND-*.csv data/BR-*.csv
-poetry run python -m Fishing_Line_Flyback_Impact_Analysis postprocess -i out/run_results.txt --plot-type dual
+# Generate publication plots and statistics
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data/csv --create-plots
+
+# Create boundary validation plots for methods paper
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single data/csv/STND-21-5.csv --show-plot
+
+# Interactive force exploration for supplementary materials
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis interactive-plot data/csv/STND-21-5.csv --show-analysis
+```
+
+### Quality Control Workflow
+
+```bash
+# Quick dataset overview
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check data/csv
+
+# Detailed single-file validation
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single problem_file.csv --debug --show-plot
+
+# Interactive exploration of problematic data
+poetry run python -m Fishing_Line_Flyback_Impact_Analysis gui --file problem_file.csv
+```
+
+## Architecture Overview
+
+**Version 3.0 - Impulse-Focused Design:**
+
+```
+Fishing_Line_Flyback_Impact_Analysis/
+├── impulse_analysis.py          # Primary analysis engine
+├── shared/                      # Common components
+│   ├── constants.py            # Configuration masses, parameters
+│   └── data_processing.py      # CSV loading, force calculation
+├── visualization.py            # Impulse-focused plotting
+├── gui/                        # PyQt interactive dashboard
+│   └── main_window.py         # Tabbed interface
+├── legacy/                     # Previous implementations
+│   ├── kinetic_energy_analysis.py
+│   ├── windowing.py
+│   └── legacy_visualization.py
+└── __main__.py                 # Comprehensive CLI
 ```
 
 ## Research Applications
 
-This package is designed for researchers studying:
+This package supports research in:
 
-- **Fishing safety**: Quantifying flyback impact risks
+- **Fishing safety**: Quantifying flyback momentum transfer risks
 - **Equipment design**: Comparing weight configuration effectiveness
-- **Biomechanics**: Understanding impact forces and injury potential
-- **Materials testing**: Analyzing line failure and energy dissipation
+- **Impact biomechanics**: Understanding momentum transfer to human body
+- **Materials testing**: Line failure and momentum dissipation analysis
+- **Method validation**: Comparing impulse vs. energy-based approaches
 
 ## Contributing
 
@@ -272,13 +437,20 @@ If you use this software in your research, please cite:
 
 ```bibtex
 @software{flyback_impact_analysis_2025,
-    title = {Fishing Line Flyback Impact Analysis},
+    title = {Fishing Line Flyback Impact Analysis: Impulse-Based Momentum Transfer Analysis},
     author = {Nanosystems Lab},
     year = {2025},
     url = {https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis},
-    version = {0.0.1}
+    version = {3.0.0},
+    note = {Impulse-focused analysis package for fishing line flyback impact measurement}
 }
 ```
+
+## Version History
+
+- **v3.0.0** - Impulse-focused architecture, shared components, PyQt GUI
+- **v2.x** - Kinetic energy analysis (moved to legacy)
+- **v1.x** - Initial implementation (moved to legacy)
 
 ## Credits
 

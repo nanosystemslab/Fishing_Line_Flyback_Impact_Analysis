@@ -19,15 +19,7 @@ When fishing lines snap under tension, the rapid flyback creates significant imp
 **Primary Method: Impulse Analysis (v3.0)**
 
 - **Direct momentum transfer measurement** via ∫F(t)dt integration
-- **More relevant to fishing line performance** than kinetic energy estimation
-- **Simple and robust** - integrates complete force curve without assumptions
 - **What the fish/lure actually experiences** during impact
-
-**Legacy Methods (available via `legacy` module)**
-
-- Kinetic energy analysis using peak-focused deceleration phase
-- Interactive windowing tools for manual impact region selection
-- Method comparison utilities for research validation
 
 ## Features
 
@@ -35,9 +27,6 @@ When fishing lines snap under tension, the rapid flyback creates significant imp
 
 - **Direct momentum transfer measurement** using ∫F(t)dt
 - **Configuration-specific masses** (STND=45g, DF=60g, DS=72g, SL=69g, BR=45g)
-- **Measured line mass integration** (70% effective from 38.8g total)
-- **Automatic impact boundary detection** with validation plots
-- **Publication-quality visualizations** and statistical summaries
 
 ### 🔍 **Data Processing**
 
@@ -125,32 +114,11 @@ $ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-impulse data
    SL: Sliding         ( 69g + 27g =  96g total)
    BR: Breakaway       ( 45g + 27g =  72g total)
 
-✅ Successfully analyzed: 47/47 files
-📊 Impulse range: -0.002956 to +0.003621 N*s
+✅ Successfully analyzed: 50/50 files
 📁 All results saved to: impulse_analysis
 ```
 
-### 2. Single File Analysis with Validation
-
-```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single data/csv/STND-21-5.csv --show-plot
-```
-
-**Output:**
-
-```
-🔍 Single File Impulse Analysis: STND-21-5.csv
---------------------------------------------------
-📊 IMPULSE ANALYSIS RESULTS:
-   Total impulse: +0.002874 N*s
-   Absolute impulse: 0.002874 N*s
-   Peak force: 1247 N
-   Impact duration: 3.2 ms
-   Equivalent velocity: 40 m/s
-   Equivalent KE: 0.000058 J
-```
-
-### 3. Interactive GUI Dashboard
+### 2. Interactive GUI Dashboard
 
 ```console
 $ poetry run python -m Fishing_Line_Flyback_Impact_Analysis gui
@@ -212,18 +180,6 @@ Arguments:
 Options:
   --output-dir, -o      Output directory [default: impulse_analysis]
   --create-plots        Create summary box plots [default: True]
-```
-
-#### `analyze-single` - Single File Analysis
-
-```console
-$ poetry run python -m Fishing_Line_Flyback_Impact_Analysis analyze-single [FILE_PATH]
-
-Options:
-  --material, -m        Material code (auto-detected if not specified)
-  --output, -o          Output file for results
-  --show-plot          Show boundary validation plot
-  --debug              Show detailed debug information
 ```
 
 #### `gui` - Interactive Dashboard
@@ -362,7 +318,7 @@ poetry run python -m Fishing_Line_Flyback_Impact_Analysis legacy ke-analysis dat
 poetry run python -m Fishing_Line_Flyback_Impact_Analysis quick-check data/csv -n 20
 ```
 
-### Publication-Ready Analysis
+### Publication Plot Analysis
 
 ```bash
 # Generate publication plots and statistics
@@ -390,7 +346,7 @@ poetry run python -m Fishing_Line_Flyback_Impact_Analysis gui --file problem_fil
 
 ## Architecture Overview
 
-**Version 3.0 - Impulse-Focused Design:**
+**Impulse-Focused Design:**
 
 ```
 Fishing_Line_Flyback_Impact_Analysis/
@@ -448,9 +404,9 @@ If you use this software in your research, please cite:
 
 ## Version History
 
-- **v3.0.0** - Impulse-focused architecture, shared components, PyQt GUI
-- **v2.x** - Kinetic energy analysis (moved to legacy)
-- **v1.x** - Initial implementation (moved to legacy)
+- **v1.0.0** - Impulse-focused architecture, shared components, PyQt GUI
+- **v0.2x** - Kinetic energy analysis (moved to legacy)
+- **v0.1x** - Initial implementation (moved to legacy)
 
 ## Credits
 

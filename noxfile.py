@@ -23,8 +23,8 @@ except ImportError:
     raise SystemExit(dedent(message)) from None
 
 
-package = "Fishing_Line_Material_Properties_Analysis"
-python_versions = ["3.12", "3.11"]  # Updated to match pyproject.toml requirements
+package = "Fishing_Line_Flyback_Impact_Analysis"
+python_versions = ["3.12", "3.11"]
 nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = (
     "pre-commit",
@@ -120,11 +120,8 @@ def precommit(session: Session) -> None:
         "--hook-stage=manual",
         "--show-diff-on-failure",
     ]
-    # Use pip directly to avoid poetry export issues
-    session.run("pip", "install", ".")
-    session.run(
-        "pip",
-        "install",
+    session.install(".")
+    session.install(
         "bandit",
         "black",
         "darglint",
@@ -155,11 +152,15 @@ def safety(session: Session) -> None:
 @session(python=python_versions)
 def mypy(session: Session) -> None:
     """Type-check using mypy."""
-    args = session.posargs or ["src", "docs/conf.py"]  # Remove "tests" from here
+    args = session.posargs or ["src", "docs/conf.py"]
     session.install(".")
     session.install("mypy", "pytest")
     # Install type stubs that are in your dev dependencies
-    session.install("pandas-stubs", "types-seaborn")
+    try:
+        session.install("pandas-stubs", "types-seaborn")
+    except Exception:
+        session.log("Could not install type stubs, continuing without them")
+
     session.run("mypy", *args)
     if not session.posargs:
         session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")
@@ -167,15 +168,176 @@ def mypy(session: Session) -> None:
 
 @session(python=python_versions)
 def tests(session: Session) -> None:
-    """Run the test suite."""
+    """Run the test suite with comprehensive coverage."""
     session.install(".")
-    session.install("coverage[toml]", "pytest", "pygments")
+    session.install(
+        "coverage[toml]",
+        "pytest",
+        "pytest-cov",
+        "pytest-xdist",
+        "pytest-mock",
+        "pytest-timeout",
+        "pygments",
+        "psutil",
+    )
+
+    # Run tests with coverage, excluding legacy directory
     try:
-        # Fixed: Remove --parallel flag that was causing CI hangs
-        session.run("coverage", "run", "-m", "pytest", *session.posargs)
+        session.run(
+            "coverage",
+            "run",
+            "--source=src/Fishing_Line_Flyback_Impact_Analysis",
+            "--omit=*/legacy/*,*/tests/*",
+            "-m",
+            "pytest",
+            "tests/",
+            "-m",
+            "not slow and not gui and not visualization",
+            "--tb=short",
+            "--disable-warnings",
+            *session.posargs,
+        )
     finally:
         if session.interactive:
             session.notify("coverage", posargs=[])
+
+
+@session(name="tests-all", python=python_versions[0])
+def tests_all(session: Session) -> None:
+    """Run all tests including slow, GUI, and visualization tests."""
+    session.install(".")
+    session.install(
+        "coverage[toml]",
+        "pytest",
+        "pytest-cov",
+        "pytest-xdist",
+        "pytest-mock",
+        "pytest-timeout",
+        "pygments",
+        "psutil",
+    )
+
+    # Install GUI dependencies for comprehensive testing
+    try:
+        session.install("pyqt5", "pyqtgraph")
+        gui_available = True
+    except Exception:
+        session.log("GUI dependencies not available, skipping GUI tests")
+        gui_available = False
+
+    # Determine test markers
+    markers = []
+    if not gui_available:
+        markers.append("not gui")
+
+    marker_arg = []
+    if markers:
+        marker_arg = ["-m", " and ".join(markers)]
+
+    try:
+        session.run(
+            "coverage",
+            "run",
+            "--source=src/Fishing_Line_Flyback_Impact_Analysis",
+            "--omit=*/legacy/*,*/tests/*",
+            "-m",
+            "pytest",
+            "tests/",
+            *marker_arg,
+            "--tb=short",
+            "--timeout=300",
+            *session.posargs,
+        )
+    finally:
+        if session.interactive:
+            session.notify("coverage", posargs=[])
+
+
+@session(name="tests-fast", python=python_versions[0])
+def tests_fast(session: Session) -> None:
+    """Run only fast tests for quick feedback."""
+    session.install(".")
+    session.install(
+        "coverage[toml]",
+        "pytest",
+        "pytest-cov",
+        "pygments",
+    )
+
+    try:
+        session.run(
+            "coverage",
+            "run",
+            "--source=src/Fishing_Line_Flyback_Impact_Analysis",
+            "--omit=*/legacy/*,*/tests/*",
+            "-m",
+            "pytest",
+            "tests/",
+            "-m",
+            "not slow and not gui and not visualization and not integration",
+            "--tb=short",
+            "--disable-warnings",
+            *session.posargs,
+        )
+    finally:
+        if session.interactive:
+            session.notify("coverage", posargs=[])
+
+
+@session(name="tests-integration", python=python_versions[0])
+def tests_integration(session: Session) -> None:
+    """Run integration tests."""
+    session.install(".")
+    session.install(
+        "coverage[toml]",
+        "pytest",
+        "pytest-cov",
+        "pytest-timeout",
+        "pygments",
+        "psutil",
+    )
+
+    try:
+        session.run(
+            "coverage",
+            "run",
+            "--append",
+            "--source=src/Fishing_Line_Flyback_Impact_Analysis",
+            "--omit=*/legacy/*,*/tests/*",
+            "-m",
+            "pytest",
+            "tests/",
+            "-m",
+            "integration",
+            "--tb=short",
+            "--timeout=300",
+            *session.posargs,
+        )
+    finally:
+        if session.interactive:
+            session.notify("coverage", posargs=[])
+
+
+@session(name="tests-performance", python=python_versions[0])
+def tests_performance(session: Session) -> None:
+    """Run performance tests."""
+    session.install(".")
+    session.install(
+        "pytest",
+        "pytest-timeout",
+        "pygments",
+        "psutil",
+    )
+
+    session.run(
+        "pytest",
+        "tests/test_performance.py",
+        "-m",
+        "not slow",  # Run only non-slow performance tests
+        "--tb=short",
+        "--timeout=600",
+        *session.posargs,
+    )
 
 
 @session(python=python_versions[0])
@@ -191,12 +353,31 @@ def coverage(session: Session) -> None:
     session.run("coverage", *args)
 
 
+@session(name="coverage-html", python=python_versions[0])
+def coverage_html(session: Session) -> None:
+    """Generate HTML coverage report."""
+    session.install("coverage[toml]")
+
+    if any(Path().glob(".coverage.*")):
+        session.run("coverage", "combine")
+
+    session.run("coverage", "html")
+    session.log("HTML coverage report generated in htmlcov/")
+
+
 @session(python=python_versions[0])
 def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
-    session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
+    session.run(
+        "pytest",
+        f"--typeguard-packages={package}",
+        "tests/",
+        "-m",
+        "not slow and not gui and not visualization",
+        *session.posargs,
+    )
 
 
 @session(python=python_versions)
@@ -212,13 +393,12 @@ def xdoctest(session: Session) -> None:
     session.install(".")
     session.install("xdoctest[colors]")
 
-    # Fix: Skip if no docstring examples found
+    # Skip if no docstring examples found
     try:
         session.run("python", "-m", "xdoctest", *args)
     except Exception as e:
         session.log(f"xdoctest failed: {e}")
         session.log("This is expected if there are no docstring examples to test")
-        # Don't fail the session if xdoctest can't find examples
 
 
 @session(name="docs-build", python=python_versions[0])
@@ -227,17 +407,16 @@ def docs_build(session: Session) -> None:
     args = session.posargs or ["docs", "docs/_build"]
     if not session.posargs and "FORCE_COLOR" in os.environ:
         args.insert(0, "--color")
-    # Use pip directly to avoid poetry export issues
-    session.run("pip", "install", ".")
-    session.run(
-        "pip",
-        "install",
+
+    session.install(".")
+    session.install(
         "sphinx",
         "sphinx-argparse",
         "furo",
         "myst-parser",
         "pydata-sphinx-theme",
     )
+
     build_dir = Path("docs", "_build")
     if build_dir.exists():
         shutil.rmtree(build_dir)
@@ -249,11 +428,8 @@ def docs(session: Session) -> None:
     """Build and serve the documentation with live reloading on file changes."""
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
 
-    # Use pip directly to avoid poetry export issues
-    session.run("pip", "install", ".")
-    session.run(
-        "pip",
-        "install",
+    session.install(".")
+    session.install(
         "sphinx",
         "sphinx-autobuild",
         "sphinx-argparse",
@@ -271,7 +447,53 @@ def docs(session: Session) -> None:
 @session(name="docs-linkcheck", python=python_versions[0])
 def docs_linkcheck(session: Session) -> None:
     """Check links in the documentation."""
-    # Use pip directly to avoid poetry export issues
-    session.run("pip", "install", ".")
-    session.run("pip", "install", "sphinx", "sphinx-argparse", "furo", "myst-parser")
+    session.install(".")
+    session.install("sphinx", "sphinx-argparse", "furo", "myst-parser")
     session.run("sphinx-build", "docs", "docs/_build", "-b", "linkcheck")
+
+
+@session(name="lint", python=python_versions[0])
+def lint(session: Session) -> None:
+    """Run all linting tools."""
+    session.notify("pre-commit")
+
+
+@session(name="test-matrix", python=python_versions[0])
+def test_matrix(session: Session) -> None:
+    """Run the full test matrix (fast, integration, performance)."""
+    session.log("Running fast tests...")
+    session.notify("tests-fast")
+
+    session.log("Running integration tests...")
+    session.notify("tests-integration")
+
+    session.log("Running performance tests...")
+    session.notify("tests-performance")
+
+    session.log("Generating coverage report...")
+    session.notify("coverage-html")
+
+
+# Convenience session for development
+@session(name="dev", python=python_versions[0])
+def dev(session: Session) -> None:
+    """Development session: install package in editable mode and run fast tests."""
+    session.install("-e", ".")
+    session.install(
+        "coverage[toml]",
+        "pytest",
+        "pytest-cov",
+        "pygments",
+    )
+
+    session.log("Running fast tests for development feedback...")
+    session.run(
+        "pytest",
+        "tests/",
+        "-m",
+        "not slow and not gui and not visualization",
+        "--tb=short",
+        "--disable-warnings",
+        "-x",  # Stop on first failure for faster feedback
+        *session.posargs,
+    )

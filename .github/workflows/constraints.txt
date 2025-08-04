@@ -1,5 +1,9 @@
-pip==24.2
-nox==2024.4.15
-nox-poetry==1.0.3
-poetry==1.8.3
-virtualenv==20.26.4
+pip>=23.0
+setuptools>=65.0
+wheel>=0.38.0
+poetry>=1.6.0
+nox>=2023.4.22
+nox-poetry>=1.0.3
+pre-commit>=3.0.0
+coverage>=7.0.0
+pytest>=7.0.0

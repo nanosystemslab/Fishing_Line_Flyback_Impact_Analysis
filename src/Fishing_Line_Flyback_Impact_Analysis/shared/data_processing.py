@@ -168,33 +168,32 @@ def get_time_array(
 
 
 def extract_material_code(filename: str) -> str:
-    """Extract material configuration code from filename.
+    """Extract material code from filename."""
+    if not filename or not isinstance(filename, str):
+        return "UNKNOWN"
 
-    Args:
-        filename: CSV filename
-
-    Returns:
-        Material code (e.g., 'STND', 'DF', etc.)
-    """
     try:
-        return Path(filename).stem.split("-")[0]
-    except (IndexError, AttributeError):
+        parts = filename.split("-")
+        if len(parts) < 2:
+            return "UNKNOWN"
+        return parts[0]
+    except (AttributeError, IndexError, ValueError):
         return "UNKNOWN"
 
 
 def extract_sample_number(filename: str) -> str:
-    """Extract sample number from filename.
+    """Extract sample number from filename."""
+    if not filename or not isinstance(filename, str):
+        return "UNKNOWN"
 
-    Args:
-        filename: CSV filename
-
-    Returns:
-        Sample identifier
-    """
     try:
-        parts = Path(filename).stem.split("-")
-        return "-".join(parts[1:])
-    except (IndexError, AttributeError):
+        parts = filename.split("-")
+        if len(parts) < 3:
+            return "UNKNOWN"
+        # Remove .csv extension from last part
+        last_part = parts[-1].replace(".csv", "")
+        return "-".join(parts[1:-1] + [last_part])
+    except (AttributeError, IndexError, ValueError):
         return "UNKNOWN"
 
 

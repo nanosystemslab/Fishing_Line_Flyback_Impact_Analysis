@@ -501,7 +501,7 @@ def run_impulse_analysis(  # noqa: C901
         total_mass_kg = weight_kg + line_mass_kg
         print(
             f"{config:4s}: {weight_kg * 1000:2.0f}g + "
-            f"{line_mass_kg * 1000:.0f}g = {total_mass_kg * 1000:.f}g total"
+            f"{line_mass_kg * 1000:.0f}g = {total_mass_kg * 1000:.0f}g total"
         )
     print()
 

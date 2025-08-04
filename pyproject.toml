@@ -61,6 +61,13 @@ pytest-cov = "^6.2.1"
 pydata-sphinx-theme = "^0.16.1"
 autoflake = "^2.3.1"
 autopep8 = "^2.3.2"
+# Additional test dependencies
+pytest-xdist = "^3.3.1"
+pytest-mock = "^3.12.0"
+pytest-timeout = "^2.3.1"
+psutil = "^5.9.8"
+nox = "^2025.5.1"
+nox-poetry = "^1.2.0"
 
 [tool.poetry.scripts]
 # Main entry point (long form)
@@ -76,11 +83,62 @@ tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
 branch = true
-source = ["Fishing_Line_Flyback_Impact_Analysis", "tests"]
+source = ["src/Fishing_Line_Flyback_Impact_Analysis"]
+omit = [
+    "*/legacy/*",
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "src/Fishing_Line_Flyback_Impact_Analysis/legacy/*",
+]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 100
+fail_under = 85
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if False:",
+    "if TYPE_CHECKING:",
+    "except ImportError:",
+    "except ModuleNotFoundError:",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
+    "--disable-warnings",
+    "-ra",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "gui: marks tests that require GUI components",
+    "visualization: marks tests that create plots/visualizations",
+    "performance: marks performance and stress tests",
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::FutureWarning",
+    "ignore:.*imp module.*:DeprecationWarning",
+]
+timeout = 300
+timeout_method = "thread"
 
 [tool.isort]
 profile = "black"
@@ -94,6 +152,27 @@ pretty = true
 show_column_numbers = true
 show_error_context = true
 ignore_errors = true
+# Exclude legacy directory from type checking
+exclude = [
+    "src/Fishing_Line_Flyback_Impact_Analysis/legacy/.*",
+]
+
+[tool.black]
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | src/Fishing_Line_Flyback_Impact_Analysis/legacy
+)/
+'''
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

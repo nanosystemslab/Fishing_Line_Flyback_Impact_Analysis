@@ -1,8 +1,10 @@
 name: Tests
 
 on:
-  - push
-  - pull_request
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
   tests:
@@ -17,10 +19,15 @@ jobs:
           - { python: "3.12", os: "ubuntu-latest", session: "safety" }
           - { python: "3.12", os: "ubuntu-latest", session: "mypy" }
           - { python: "3.11", os: "ubuntu-latest", session: "mypy" }
-          - { python: "3.12", os: "ubuntu-latest", session: "tests" }
-          - { python: "3.11", os: "ubuntu-latest", session: "tests" }
-          - { python: "3.12", os: "windows-latest", session: "tests" }
-          - { python: "3.12", os: "macos-latest", session: "tests" }
+          - { python: "3.12", os: "ubuntu-latest", session: "tests-fast" }
+          - { python: "3.11", os: "ubuntu-latest", session: "tests-fast" }
+          - { python: "3.12", os: "windows-latest", session: "tests-fast" }
+          - { python: "3.12", os: "macos-latest", session: "tests-fast" }
+          - {
+              python: "3.12",
+              os: "ubuntu-latest",
+              session: "tests-integration",
+            }
           - { python: "3.12", os: "ubuntu-latest", session: "typeguard" }
           - { python: "3.12", os: "ubuntu-latest", session: "xdoctest" }
           - { python: "3.12", os: "ubuntu-latest", session: "docs-build" }
@@ -42,6 +49,212 @@ jobs:
       - name: Upgrade pip
         run: |
           pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: Install Nox
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          nox --version
+
+      - name: Run comprehensive tests with GUI support
+        run: |
+          xvfb-run -a nox --session=tests-all --python=3.12
+        timeout-minutes: 40
+
+      - name: Upload comprehensive coverage data
+        if: always()
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: coverage-data-comprehensive
+          path: ".coverage.*"
+          include-hidden-files: true
+
+  # Performance testing job (optional)
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: tests
+    if: contains(github.event.pull_request.labels.*.name, 'performance') || github.event_name == 'push'
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: Install Nox
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          nox --version
+
+      - name: Run performance tests
+        run: |
+          nox --session=tests-performance --python=3.12
+        timeout-minutes: 25
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: [tests, tests-comprehensive]
+    if: always()
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: Install Nox
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          nox --version
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-data-*
+          merge-multiple: true
+
+      - name: Combine coverage data and display human readable report
+        run: |
+          nox --session=coverage
+
+      - name: Create coverage report
+        run: |
+          nox --session=coverage -- xml
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4.5.0
+        with:
+          file: ./coverage.xml
+          flags: unit,integration
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Security scanning job
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: tests
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: Install Nox
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          nox --version
+
+      - name: Run safety check
+        run: |
+          nox --session=safety --python=3.12
+
+      - name: Run bandit security scan
+        run: |
+          poetry install
+          poetry run bandit -r src/ -f json -o bandit-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+
+  # Build verification job
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: tests
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: Build package
+        run: |
+          poetry build
+
+      - name: Check package
+        run: |
+          pip install twine
+          twine check dist/*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Test package installation
+        run: |
+          pip install dist/*.whl
+          python -c "import Fishing_Line_Flyback_Impact_Analysis; print('Package imported successfully')"constraint=.github/workflows/constraints.txt pip
           pip --version
 
       - name: Upgrade pip in virtual environments
@@ -94,10 +307,10 @@ jobs:
         timeout-minutes: 20
 
       - name: Upload coverage data
-        if: always() && matrix.session == 'tests'
+        if: always() && (matrix.session == 'tests-fast' || matrix.session == 'tests-integration')
         uses: "actions/upload-artifact@v4"
         with:
-          name: coverage-data-${{ matrix.python }}-${{ matrix.os }}
+          name: coverage-data-${{ matrix.session }}-${{ matrix.python }}-${{ matrix.os }}
           path: ".coverage.*"
           include-hidden-files: true
 
@@ -108,47 +321,36 @@ jobs:
           name: docs
           path: docs/_build
 
-  coverage:
+  # Additional comprehensive testing job
+  tests-comprehensive:
+    name: Comprehensive Tests
     runs-on: ubuntu-latest
     needs: tests
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'comprehensive')
+    timeout-minutes: 45
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Install system dependencies for GUI tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-xinerama0
+
       - name: Upgrade pip
         run: |
-          pip install --constraint=.github/workflows/constraints.txt pip
-          pip --version
-
-      - name: Install Poetry
-        run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
-          poetry --version
-
-      - name: Install Nox
-        run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
-          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
-          nox --version
-
-      - name: Download coverage data
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-data-*
-          merge-multiple: true
-
-      - name: Combine coverage data and display human readable report
-        run: |
-          nox --session=coverage
-
-      - name: Create coverage report
-        run: |
-          nox --session=coverage -- xml
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v4.5.0
+          pip install --

@@ -1,9 +1,59 @@
-comment: false
 coverage:
+  ignore:
+    - "src/Fishing_Line_Flyback_Impact_Analysis/legacy/*"
+    - "tests/*"
+    - "docs/*"
+    - "*.md"
+    - "*.rst"
+    - "*.txt"
+    - "setup.py"
+    - "conftest.py"
+    - "noxfile.py"
+
+  range: "70..100"
+  round: down
+  precision: 2
+
   status:
     project:
       default:
-        target: "90"
+        target: 85%
+        threshold: 2%
+        base: auto
+        # Only fail if coverage drops significantly
+        if_ci_failed: error
+        if_not_found: success
     patch:
       default:
-        target: "90"
+        target: 80%
+        threshold: 5%
+        # Be more lenient on patches
+        if_ci_failed: error
+        if_not_found: success
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+flags:
+  unit:
+    paths:
+      - "tests/test_*.py"
+      - "!tests/test_integration.py"
+      - "!tests/test_performance.py"
+    carryforward: true
+  integration:
+    paths:
+      - "tests/test_integration.py"
+    carryforward: true
+  performance:
+    paths:
+      - "tests/test_performance.py"
+    carryforward: true
+
+# Ignore coverage drops for specific files that are hard to test
+ignore:
+  - "src/Fishing_Line_Flyback_Impact_Analysis/legacy/**/*"

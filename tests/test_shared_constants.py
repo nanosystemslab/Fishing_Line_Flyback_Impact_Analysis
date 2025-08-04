@@ -1,7 +1,5 @@
 """Tests for shared constants module."""
 
-import pytest
-
 from Fishing_Line_Flyback_Impact_Analysis.shared.constants import CONFIG_WEIGHTS
 from Fishing_Line_Flyback_Impact_Analysis.shared.constants import DEFAULT_SAMPLING_RATE
 from Fishing_Line_Flyback_Impact_Analysis.shared.constants import GRAMS_TO_KG
@@ -30,7 +28,7 @@ class TestConstants:
 
     def test_config_weights_values(self):
         """Test that configuration weights are reasonable."""
-        for config, weight in CONFIG_WEIGHTS.items():
+        for _config, weight in CONFIG_WEIGHTS.items():
             assert isinstance(weight, float)
             assert 0.040 <= weight <= 0.080  # 40-80g range
 

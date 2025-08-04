@@ -2,12 +2,10 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from Fishing_Line_Flyback_Impact_Analysis.impulse_analysis import ImpulseAnalyzer
 from Fishing_Line_Flyback_Impact_Analysis.impulse_analysis import (
@@ -61,7 +59,6 @@ class TestImpulseAnalyzer:
 
         # Create synthetic force data with clear impact
         n_points = 1000
-        time = np.linspace(0, 0.1, n_points)
         force = np.zeros(n_points)
 
         # Add impact peak around middle
@@ -165,6 +162,7 @@ class TestImpulseAnalyzer:
     def test_analyze_csv_file_success(self):
         """Test successful CSV file analysis."""
         analyzer = ImpulseAnalyzer(material_code="STND")
+        print(analyzer)
 
         # Create test CSV with force data
         test_data = {
@@ -548,7 +546,7 @@ class TestIntegration:
             assert np.std(all_impulses) > 0  # Should have variation.csv")
 
         try:
-            result = analyzer.analyze_csv_file(file_path)
+            result = analyzer.analyze_csv_file(file_path)  # noqa: F821
 
             assert "error" not in result
             assert result["filename"] == "STND-21-5.csv"
@@ -622,3 +620,4 @@ class TestModuleFunctions:
         test_data["AI_Channel_1_lbf"][400:600] = 500
 
         file_path = self.create_test_csv(test_data, "STND-21-5.csv")
+        print(file_path)

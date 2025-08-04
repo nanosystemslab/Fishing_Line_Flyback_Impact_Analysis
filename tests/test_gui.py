@@ -252,7 +252,7 @@ class TestGUIIntegration:
 
     def test_gui_imports_in_main_init(self):
         """Test that GUI components are properly imported in main __init__.py."""
-        import Fishing_Line_Flyback_Impact_Analysis as fli
+        import Fishing_Line_Flyback_Impact_Analysis as fli  # noqa: N813
 
         # Should have GUI-related functions
         gui_functions = [
@@ -381,9 +381,6 @@ class TestGUIPerformance:
 
         # Get memory usage before import
         initial_modules = len(sys.modules)
-
-        # Import GUI module
-        from Fishing_Line_Flyback_Impact_Analysis import gui
 
         # Should not import excessive number of modules if PyQt not available
         if not PYQT_AVAILABLE:

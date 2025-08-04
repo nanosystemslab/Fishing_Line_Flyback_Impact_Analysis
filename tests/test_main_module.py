@@ -3,12 +3,10 @@
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import pytest
 from click.testing import CliRunner
 
 from Fishing_Line_Flyback_Impact_Analysis import batch_analysis
@@ -399,7 +397,7 @@ class TestPackageLevelFunctions:
         expected_materials = {"STND", "DF", "DS", "SL", "BR"}
         assert set(configs.keys()) == expected_materials
 
-        for material, config in configs.items():
+        for _material, config in configs.items():
             assert "name" in config
             assert "hardware_mass_kg" in config
             assert "total_mass_kg" in config
@@ -442,7 +440,7 @@ class TestMainInit:
 
     def test_main_module_imports(self):
         """Test that main module imports work correctly."""
-        import Fishing_Line_Flyback_Impact_Analysis as fli
+        import Fishing_Line_Flyback_Impact_Analysis as fli  # noqa: N813
 
         # Core analysis functions
         assert hasattr(fli, "ImpulseAnalyzer")
@@ -465,7 +463,7 @@ class TestMainInit:
 
     def test_module_metadata(self):
         """Test module metadata."""
-        import Fishing_Line_Flyback_Impact_Analysis as fli
+        import Fishing_Line_Flyback_Impact_Analysis as fli  # noqa: N813
 
         assert hasattr(fli, "__version__")
         assert hasattr(fli, "__author__")
@@ -477,7 +475,7 @@ class TestMainInit:
 
     def test_module_all_exports(self):
         """Test that __all__ is properly defined."""
-        import Fishing_Line_Flyback_Impact_Analysis as fli
+        import Fishing_Line_Flyback_Impact_Analysis as fli  # noqa: N813
 
         assert hasattr(fli, "__all__")
         assert isinstance(fli.__all__, list)
@@ -489,7 +487,7 @@ class TestMainInit:
 
     def test_shared_constants_access(self):
         """Test access to shared constants."""
-        import Fishing_Line_Flyback_Impact_Analysis as fli
+        import Fishing_Line_Flyback_Impact_Analysis as fli  # noqa: N813
 
         assert hasattr(fli, "CONFIG_WEIGHTS")
         assert hasattr(fli, "MATERIAL_NAMES")
@@ -506,7 +504,7 @@ class TestMainInit:
         # Re-import to trigger configuration
         import importlib
 
-        import Fishing_Line_Flyback_Impact_Analysis
+        import Fishing_Line_Flyback_Impact_Analysis  # noqa: N813
 
         importlib.reload(Fishing_Line_Flyback_Impact_Analysis)
 
@@ -564,6 +562,7 @@ class TestCLIErrorHandling:
             result = runner.invoke(
                 main, ["analyze-single", str(file_path), "--material", "INVALID"]
             )
+            print(result)
 
             # Should handle gracefully (might succeed with default values)
             # or fail with appropriate error message

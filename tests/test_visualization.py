@@ -2,12 +2,10 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from Fishing_Line_Flyback_Impact_Analysis.visualization import (
     create_impulse_material_comparison,
@@ -573,7 +571,7 @@ class TestVisualizationIntegration:
 
             # Verify output file exists
             output_file = Path(temp_dir) / "impulse_material_comparison.png"
-            # Note: File might not exist in test environment, but function should run
+            print(output_file)
 
         # Test summary statistics
         summary = create_impulse_summary_statistics(results, None)
@@ -610,7 +608,7 @@ class TestVisualizationIntegration:
 
         # Should handle empty data gracefully
         with patch("matplotlib.pyplot.show"):
-            fig = show_force_preview(empty_force, empty_time, "empty.csv")
+            show_force_preview(empty_force, empty_time, "empty.csv")
             # Might return None or raise exception - both are acceptable
 
     def test_visualization_memory_efficiency(self):
@@ -625,7 +623,7 @@ class TestVisualizationIntegration:
 
         with patch("matplotlib.pyplot.show"):
             # Should handle large datasets without memory issues
-            fig = show_force_preview(force, time, "large_dataset.csv")
+            show_force_preview(force, time, "large_dataset.csv")
             # Function should complete without raising MemoryError
 
 

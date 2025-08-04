@@ -4,15 +4,14 @@
 import argparse
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run_command(cmd, description=""):
     """Run a command and handle errors."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Running: {description}")
     print(f"Command: {' '.join(cmd)}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -28,7 +27,8 @@ def run_command(cmd, description=""):
         return False
 
 
-def main():
+def main():  # noqa: C901
+    """Main Function."""
     parser = argparse.ArgumentParser(description="Run tests with various options")
     parser.add_argument("--fast", action="store_true", help="Run only fast tests")
     parser.add_argument("--unit", action="store_true", help="Run only unit tests")
@@ -128,9 +128,9 @@ def main():
 
     # Generate additional reports if requested
     if args.coverage and not args.no_coverage:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Coverage Summary:")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         # Show coverage report
         subprocess.run(

@@ -73,7 +73,7 @@ class TestPerformance:
             ), f"Memory usage too high: {memory_stats['increase_mb']:.1f}MB"
 
             print(
-                f"Large dataset analysis: {elapsed:.2f}s, {memory_stats['increase_mb']:.1f}MB"
+                f"Large dataset analysis: {elapsed:.2f}s, {memory_stats['increase_mb']:.1f}MB"  # noqa: B950
             )
 
         finally:
@@ -175,7 +175,7 @@ class TestPerformance:
             ), f"Memory usage too high: {memory_stats['increase_mb']:.1f}MB"
 
             print(
-                f"Batch analysis {n_files} files: {elapsed:.2f}s total, {time_per_file:.2f}s per file"
+                f"Batch analysis {n_files} files: {elapsed:.2f}s total, {time_per_file:.2f}s per file"  # noqa: B950
             )
             print(f"Memory usage: {memory_stats['increase_mb']:.1f}MB")
 
@@ -213,7 +213,7 @@ class TestPerformance:
         ), f"Potential memory leak: {memory_stats['increase_mb']:.1f}MB increase"
 
         print(
-            f"Memory efficiency test: {memory_stats['increase_mb']:.1f}MB increase over 10 iterations"
+            f"Memory efficiency test: {memory_stats['increase_mb']:.1f}MB increase over 10 iterations"  # noqa: B950
         )
 
     def test_file_io_performance(self, benchmark_timer):
@@ -246,7 +246,7 @@ class TestPerformance:
                 process_time = benchmark_timer.stop()
 
                 print(
-                    f"File I/O {size:,} points: write={write_time:.3f}s, read={read_time:.3f}s, process={process_time:.3f}s"
+                    f"File I/O {size:,} points: write={write_time:.3f}s, read={read_time:.3f}s, process={process_time:.3f}s"  # noqa: B950
                 )
 
                 # Performance assertions
@@ -290,7 +290,7 @@ class TestScalability:
             # Time ratio should not be much worse than size ratio
             assert (
                 time_ratio < size_ratio * 2
-            ), f"Poor scaling at size {sizes[i]}: {time_ratio:.2f}x vs {size_ratio:.2f}x"
+            ), f"Poor scaling at size {sizes[i]}: {time_ratio:.2f}x vs {size_ratio:.2f}x"  # noqa: B950
 
     def test_scaling_with_file_count(self):
         """Test how batch analysis scales with number of files."""
@@ -334,7 +334,7 @@ class TestScalability:
         for tpf in times_per_file:
             assert (
                 abs(tpf - avg_time) < avg_time * 0.5
-            ), f"Poor scaling: time per file varies too much"
+            ), "Poor scaling: time per file varies too much"
 
     def test_memory_scaling(self, memory_monitor):
         """Test memory usage scaling with data size."""
@@ -415,15 +415,17 @@ class TestRobustness:
                 if "error" not in result:
                     assert "total_impulse" in result
                     assert np.isfinite(result["total_impulse"])
-                    print(f"Extreme data test '{case['name']}': SUCCESS")
+                    print(f"Extreme data test {case['name']!r}: SUCCESS")
                 else:
                     print(
-                        f"Extreme data test '{case['name']}': Failed gracefully - {result['error']}"
+                        f"Extreme data test {case['name']!r}': Failed gracefully - {result['error']}"  # noqa: B950
                     )
 
             except Exception as e:
                 # Should not crash with unhandled exceptions
-                pytest.fail(f"Extreme data test '{case['name']}' crashed: {e}")
+                pytest.fail(
+                    f"Extreme data test {case['name']!r} crashed: {e}"
+                )  # noqa: B950
 
     def test_noisy_data_robustness(self):
         """Test robustness with very noisy data."""
@@ -446,7 +448,6 @@ class TestRobustness:
 
             # Should handle gracefully
             if "error" not in result:
-                # For very noisy data, results might not be accurate but should be finite
                 assert np.isfinite(result["total_impulse"])
                 assert np.isfinite(result["peak_force"])
                 print(f"Noise level {noise_level}x: Analysis succeeded")
@@ -477,7 +478,7 @@ class TestRobustness:
             if "error" not in result:
                 assert "total_impulse" in result
                 print(
-                    f"Duration {duration}s ({n_points:,} points): {elapsed:.2f}s analysis time"
+                    f"Duration {duration}s ({n_points:,} points): {elapsed:.2f}s analysis time"  # noqa: B950
                 )
 
                 # Should complete in reasonable time
@@ -487,7 +488,7 @@ class TestRobustness:
             else:
                 print(f"Duration {duration}s: Failed gracefully - {result['error']}")
 
-    def test_concurrent_analysis_safety(self):
+    def test_concurrent_analysis_safety(self):  # noqa: C901
         """Test thread safety with concurrent analyses."""
         import queue
         import threading
@@ -598,7 +599,7 @@ class TestStressTests:
                 # Should not use excessive memory
                 assert (
                     current_stats["increase_mb"] < 1000
-                ), f"Memory usage too high at iteration {i}: {current_stats['increase_mb']:.1f}MB"
+                ), f"Memory usage too high at iteration {i}: {current_stats['increase_mb']:.1f}MB"  # noqa: B950
 
                 # Restart monitoring
                 memory_monitor.start()
@@ -645,10 +646,10 @@ class TestStressTests:
             assert success_rate > 0.95, f"Success rate too low: {success_rate:.2%}"
 
             print(
-                f"File system stress: {n_files} files, {creation_time:.2f}s creation, {analysis_time:.2f}s analysis"
+                f"File system stress: {n_files} files, {creation_time:.2f}s creation, {analysis_time:.2f}s analysis"  # noqa: B950
             )
 
-    def test_boundary_detection_stress(self):
+    def test_boundary_detection_stress(self):  # noqa: C901
         """Stress test boundary detection with difficult cases."""
         analyzer = ImpulseAnalyzer(material_code="STND")
 
@@ -717,10 +718,10 @@ class TestStressTests:
                         captured_any_peak
                     ), f"Failed to capture any peak in {case['name']}"
 
-                print(f"Boundary stress test '{case['name']}': SUCCESS")
+                print(f"Boundary stress test {case['name']!r}: SUCCESS")
 
             except Exception as e:
-                print(f"Boundary stress test '{case['name']}': FAILED - {e}")
+                print(f"Boundary stress test {case['name']!r}: FAILED - {e}")
                 if case["name"] not in ["weak_signal", "short_impact"]:
                     # These cases might legitimately fail
                     raise
@@ -766,12 +767,12 @@ class TestStressTests:
                     assert np.isfinite(
                         result["peak_force"]
                     ), f"Non-finite force in {case['name']}"
-                    print(f"Numerical stability '{case['name']}': SUCCESS")
+                    print(f"Numerical stability {case['name']!r}: SUCCESS")
                 else:
-                    print(f"Numerical stability '{case['name']}': Failed gracefully")
+                    print(f"Numerical stability {case['name']!r}: Failed gracefully")
 
             except Exception as e:
-                print(f"Numerical stability '{case['name']}': Exception - {e}")
+                print(f"Numerical stability {case['name']!r}: Exception - {e}")
                 # Some edge cases might legitimately fail
                 if case["name"] not in ["all_zeros", "alternating"]:
                     raise

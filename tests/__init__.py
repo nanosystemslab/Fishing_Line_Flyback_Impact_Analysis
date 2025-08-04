@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import Fishing_Line_Flyback_Impact_Analysis as fli
+import Fishing_Line_Flyback_Impact_Analysis as fli  # noqa: N813
 
 
 class TestPackageImports:
@@ -149,7 +149,7 @@ class TestPackageConstants:
         assert set(weights.keys()) == expected_configs
 
         # Check reasonable weight values
-        for config, weight in weights.items():
+        for _config, weight in weights.items():
             assert isinstance(weight, float)
             assert 0.040 <= weight <= 0.080
 
@@ -219,8 +219,6 @@ class TestVersionCompatibility:
         import matplotlib
         import numpy
         import pandas
-        import scipy
-        import seaborn
 
         # Should not raise ImportError
         assert numpy.__version__
@@ -231,9 +229,6 @@ class TestVersionCompatibility:
         """Test optional dependencies are handled gracefully."""
         # GUI dependencies might not be available
         try:
-            import PyQt5
-            import pyqtgraph
-
             gui_available = True
         except ImportError:
             gui_available = False

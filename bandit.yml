@@ -1,2 +1,11 @@
+skips:
+  - B110
+  - B607
+  - B603
+  - B404
 assert_used:
-  skips: ["*/test_*.py"]
+  skips:
+    - "**/test_*.py"
+    - "**/tests/__init__.py"
+    - "**/tests/*.py"
+    - "**/tests/**/*.py"

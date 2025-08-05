@@ -1,5 +1,15 @@
 # Fishing Line Flyback Impact Analysis
 
+[![Status](https://img.shields.io/badge/status-stable-brightgreen)][repository]
+[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)][repository]
+[![License](https://img.shields.io/badge/license-GPL--3.0-green)][license]
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
+[![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
+![Analysis Types](https://img.shields.io/badge/Analysis-Impulse%20%7C%20Force%20%7C%20Impact-blue)
+![Calculations](https://img.shields.io/badge/Calculates-Momentum%20%7C%20Energy%20%7C%20Safety-green)
+![CLI](https://img.shields.io/badge/Interface-CLI-red)
+![Output Types](https://img.shields.io/badge/Outputs-Plots%20%7C%20LaTeX%20%7C%20Reports-orange)
+
 **Fishing Line Flyback Impact Analysis** provides tools for processing multi-sensor force data, calculating impact properties (impulse, energy, velocity), and generating publication-ready statistical comparisons across different fishing gear configurations.
 
 ## Overview
@@ -285,5 +295,10 @@ Distributed under the terms of the [GPL 3.0 license][license], _Fishing Line Fly
 
 ---
 
+[repository]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis
+[tests]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/actions?workflow=Tests
+[codecov]: https://app.codecov.io/gh/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis
+[pre-commit]: https://github.com/pre-commit/pre-commit
+[black]: https://github.com/psf/black
 [license]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/blob/main/LICENSE
 [contributor guide]: https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/blob/main/CONTRIBUTING.md

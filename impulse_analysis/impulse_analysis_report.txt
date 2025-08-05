@@ -1,0 +1,27 @@
+FISHING LINE IMPULSE ANALYSIS REPORT
+============================================================
+
+Analysis Date: 2025-08-04 14:46:27
+Method: Total impulse integration (∫ F(t) dt)
+Primary Metric: Total momentum transfer (N⋅s)
+Configuration weights: Included
+Line mass: 70% effective
+
+METHOD RANKING (by Total Absolute Impulse):
+--------------------------------------------------
+1. STND: 7366.153389 N⋅s magnitude (-1003.192906 signed) ± 2095.031127 (10 samples)
+2. SL: 4364.928879 N⋅s magnitude (-396.283047 signed) ± 2243.222096 (10 samples)
+3. DF: 3582.657903 N⋅s magnitude (+1849.486590 signed) ± 2912.688419 (10 samples)
+4. DS: 2913.798660 N⋅s magnitude (+1082.352049 signed) ± 1931.401037 (10 samples)
+5. BR: 1028.928836 N⋅s magnitude (+212.462007 signed) ± 561.341947 (10 samples)
+
+STATISTICAL ANALYSIS:
+ANOVA F-statistic: 1.806
+p-value: 0.144335
+Result: No significant difference between methods
+
+INTERPRETATION:
+• Total impulse = total momentum transfer to fish/lure
+• Positive values = forward momentum (typical impact)
+• Negative values = backward momentum (strong rebound)
+• Higher magnitude = more effective impact

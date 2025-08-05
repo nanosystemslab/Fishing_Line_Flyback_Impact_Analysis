@@ -1,7 +1,5 @@
 # Fishing Line Flyback Impact Analysis
 
-[![Tests](https://github.com/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/workflows/Tests/badge.svg)][tests]
-[![Codecov](https://codecov.io/gh/nanosystemslab/Fishing_Line_Flyback_Impact_Analysis/branch/main/graph/badge.svg)][codecov]
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)][license]

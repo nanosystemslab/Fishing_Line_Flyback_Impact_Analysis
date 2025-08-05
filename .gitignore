@@ -8,6 +8,7 @@
 /docs/_build/
 /src/*.egg-info/
 __pycache__/
+/.DS_Store/
 
 # Ignore Raw Data
 data/

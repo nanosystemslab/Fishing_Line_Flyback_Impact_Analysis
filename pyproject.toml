@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Fishing_Line_Flyback_Impact_Analysis"
-version = "0.0.0"
+version = "1.0.0"
 description = "A comprehensive Python package for analyzing fishing line flyback impact data from Dewesoft sensor measurements"
 authors = ["Nanosystems Lab <fnslab@hawaii.edu>"]
 license = "GPL-3.0"

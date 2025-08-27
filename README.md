@@ -9,6 +9,8 @@
 ![Calculations](https://img.shields.io/badge/Calculates-Momentum%20%7C%20Energy%20%7C%20Safety-green)
 ![CLI](https://img.shields.io/badge/Interface-CLI-red)
 ![Output Types](https://img.shields.io/badge/Outputs-Plots%20%7C%20LaTeX%20%7C%20Reports-orange)
+[![DOI](https://zenodo.org/badge/1007411695.svg)](https://doi.org/10.5281/zenodo.16748976)
+
 
 **Fishing Line Flyback Impact Analysis** provides tools for processing multi-sensor force data, calculating impact properties (impulse, energy, velocity), and generating publication-ready statistical comparisons across different fishing gear configurations.
 

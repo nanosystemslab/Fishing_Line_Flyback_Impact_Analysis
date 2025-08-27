@@ -1569,14 +1569,9 @@ def create_si_boxplots_from_impulse_results(results: List[Dict], output_dir: Pat
     plot_impulse_force_box_si(df, output_dir, units="kSI")
     plot_impulse_force_box_si(df, output_dir, units="mixed")
 
-
 def create_latex_table(results: List[Dict], output_dir: Path):
     """
-    Create LaTeX table from impulse analysis results matching the desired format.
-
-    Args:
-        results: List of impulse analysis results
-        output_dir: Output directory for LaTeX table
+    Create LaTeX table from impulse analysis results with standard error of the mean.
     """
     valid_results = [r for r in results if "error" not in r]
     if not valid_results:
@@ -1613,6 +1608,11 @@ def create_latex_table(results: List[Dict], output_dir: Path):
         if "STND" in material_stats.index
         else 0
     )
+    stnd_force = (
+        material_stats.loc["STND", ("peak_force", "mean")]
+        if "STND" in material_stats.index
+        else 0
+    )
     stnd_energy = (
         material_stats.loc["STND", ("equivalent_kinetic_energy", "mean")]
         if "STND" in material_stats.index
@@ -1622,14 +1622,14 @@ def create_latex_table(results: List[Dict], output_dir: Path):
     # Define desired material order
     material_order = ["STND", "DF", "DS", "SL", "BR"]
 
-    # Create LaTeX table content
+    # Create LaTeX table content with SEM columns
     latex_content = """\\begin{table}[htb]
 \\centering
 \\scriptsize
-\\begin{tabular}{l|c|c|c|c|c|c|c|c}
+\\begin{tabular}{l|c|c|c|c|c|c|c|c|c|c}
 \\hline
-Configuration & \\#Runs & Impulse & STD & \\% vs & Max Force & STD & Avg. Impact & \\% vs \\\\
-              &        & [kN·s]  &     & STND  & [kN]      &     & Energy [MJ] & STND \\\\
+Configuration & \\#Runs & Impulse & SEM & \\% vs & Max Force & SEM & \\% vs & Avg. Impact & SEM & \\% vs \\\\
+              &        & [kN·s]  &     & SD    & [kN]      &     & SD    & Energy [MJ] &     & SD \\\\
 \\hline\n"""
 
     for material in material_order:
@@ -1639,29 +1639,42 @@ Configuration & \\#Runs & Impulse & STD & \\% vs & Max Force & STD & Avg. Impact
         config_name = config_names.get(material, material)
         n_runs = int(material_stats.loc[material, ("total_abs_impulse", "count")])
 
-        # Convert units
+        # Convert units and calculate standard error of the mean
         impulse_kNs = (
             material_stats.loc[material, ("total_abs_impulse", "mean")] / 1000
         )  # N⋅s to kN⋅s
-        impulse_std_kNs = (
-            material_stats.loc[material, ("total_abs_impulse", "std")] / 1000
+        impulse_sem_kNs = (
+            material_stats.loc[material, ("total_abs_impulse", "std")] / 1000 / np.sqrt(n_runs)
         )
+        
         force_kN = (
             material_stats.loc[material, ("peak_force", "mean")] / 1000
         )  # N to kN
-        force_std_kN = material_stats.loc[material, ("peak_force", "std")] / 1000
+        force_sem_kN = (
+            material_stats.loc[material, ("peak_force", "std")] / 1000 / np.sqrt(n_runs)
+        )
+        
         energy_MJ = (
             material_stats.loc[material, ("equivalent_kinetic_energy", "mean")] / 1e6
         )  # J to MJ
+        energy_sem_MJ = (
+            material_stats.loc[material, ("equivalent_kinetic_energy", "std")] / 1e6 / np.sqrt(n_runs)
+        )
 
         # Calculate percentages vs STND
         if material == "STND":
-            impulse_pct = "0\\%"
-            energy_pct = "0\\%"
+            impulse_pct = "--"
+            force_pct = "--"
+            energy_pct = "--"
         else:
             impulse_pct_val = (
                 ((impulse_kNs * 1000 - stnd_impulse) / stnd_impulse * 100)
                 if stnd_impulse > 0
+                else 0
+            )
+            force_pct_val = (
+                ((force_kN * 1000 - stnd_force) / stnd_force * 100)
+                if stnd_force > 0
                 else 0
             )
             energy_pct_val = (
@@ -1670,14 +1683,20 @@ Configuration & \\#Runs & Impulse & STD & \\% vs & Max Force & STD & Avg. Impact
                 else 0
             )
             impulse_pct = f"{impulse_pct_val:+.0f}\\%"
+            force_pct = f"{force_pct_val:+.0f}\\%"
             energy_pct = f"{energy_pct_val:+.0f}\\%"
 
-        # Format the row
-        latex_content += f"{config_name:<14} & {n_runs:2d} & {impulse_kNs:4.2f} & {impulse_std_kNs:4.2f} & {impulse_pct:>5s} & {force_kN:5.2f} & {force_std_kN:5.2f} & {energy_MJ:4.0f} & {energy_pct:>5s} \\\\\n"
+        # Format the row with special handling for Breakaway (BR) precision
+        if material == "BR":
+            # Higher precision for Breakaway to show non-zero SEM values
+            latex_content += f"{config_name:<14} & {n_runs:2d} & {impulse_kNs:4.2f} & {impulse_sem_kNs:5.3f} & {impulse_pct:>5s} & {force_kN:5.2f} & {force_sem_kN:5.2f} & {force_pct:>5s} & {energy_MJ:4.0f} & {energy_sem_MJ:5.2f} & {energy_pct:>5s} \\\\\n"
+        else:
+            # Standard precision for other configurations
+            latex_content += f"{config_name:<14} & {n_runs:2d} & {impulse_kNs:4.2f} & {impulse_sem_kNs:4.2f} & {impulse_pct:>5s} & {force_kN:5.2f} & {force_sem_kN:5.2f} & {force_pct:>5s} & {energy_MJ:4.0f} & {energy_sem_MJ:4.0f} & {energy_pct:>5s} \\\\\n"
 
     latex_content += """\\hline
 \\end{tabular}
-\\caption{Flyback impact performance comparison across gear configurations. Impact Energy calculated assuming inelastic collision.}
+\\caption{Flyback impact performance comparison across gear configurations. SEM = Standard Error of Mean. Impact Energy calculated assuming inelastic collision.}
 \\label{tab:flyback_results}
 \\end{table}"""
 
@@ -1687,8 +1706,6 @@ Configuration & \\#Runs & Impulse & STD & \\% vs & Max Force & STD & Avg. Impact
         f.write(latex_content)
 
     print(f"📄 LaTeX table saved to: {latex_file}")
-
-    # Also print to console for immediate use
     print(f"\n📋 LATEX TABLE OUTPUT:")
     print("=" * 80)
     print(latex_content)
